@@ -68,9 +68,17 @@
 
                         'outline-variant': '#E5E7EB',
 
+                        'surface-container-lowest': '#ffffff',
+
                         'surface-container-low': '#f2f3ff',
 
-                        'surface-container-high': '#e2e7ff'
+                        'surface-container': '#eaedff',
+
+                        'surface-container-high': '#e2e7ff',
+
+                        'surface-container-highest': '#dae2fd',
+
+                        'secondary-fixed-dim': '#adc6ff'
 
                     },
 
@@ -127,6 +135,12 @@
 
         }
 
+        .input-ring:focus {
+            outline: none;
+            border-color: #006c49;
+            box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.2);
+        }
+
     </style>
 
 </head>
@@ -144,7 +158,14 @@
          SIDEBAR
     ====================================================== -->
 
+    <div
+        id="sidebar-overlay"
+        onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
+    ></div>
+
     <aside
+        id="sidebar"
         class="hidden
                md:flex
                flex-col
@@ -208,14 +229,14 @@
                        rounded-xl
                        transition-all
                        duration-200
-                       {{ request()->routeIs('dashboard')
-                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
-                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
+                       {{ request()->routeIs('dashboard*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
                 <span
                     class="material-symbols-outlined
-                           {{ request()->routeIs('dashboard') ? 'filled-icon' : '' }}"
+                           {{ request()->routeIs('dashboard*') ? 'filled-icon' : '' }}"
                 >
                     grid_view
                 </span>
@@ -232,19 +253,21 @@
             <!-- PENDAFTARAN -->
 
             <a
-                href="#"
+                href="{{ route('pendaftaran') }}"
                 class="flex
                        items-center
                        gap-4
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('pendaftaran*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('pendaftaran*') ? 'filled-icon' : '' }}">
                     person_add
                 </span>
 
@@ -259,19 +282,21 @@
             <!-- PASIEN -->
 
             <a
-                href="#"
+                href="{{ route('pasien') }}"
                 class="flex
                        items-center
                        gap-4
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('pasien*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('pasien*') ? 'filled-icon' : '' }}">
                     group
                 </span>
 
@@ -286,19 +311,21 @@
             <!-- REKAM MEDIS -->
 
             <a
-                href="#"
+                href="{{ route('rekam-medis') }}"
                 class="flex
                        items-center
                        gap-4
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('rekam-medis*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('rekam-medis*') ? 'filled-icon' : '' }}">
                     medical_services
                 </span>
 
@@ -320,12 +347,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('asuhan-keperawatan*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('asuhan-keperawatan*') ? 'filled-icon' : '' }}">
                     assignment
                 </span>
 
@@ -347,12 +376,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('intervensi*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('intervensi*') ? 'filled-icon' : '' }}">
                     healing
                 </span>
 
@@ -374,12 +405,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('implementasi*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('implementasi*') ? 'filled-icon' : '' }}">
                     fact_check
                 </span>
 
@@ -401,12 +434,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('evaluasi*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('evaluasi*') ? 'filled-icon' : '' }}">
                     assignment_turned_in
                 </span>
 
@@ -428,12 +463,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('ai*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('ai*') ? 'filled-icon' : '' }}">
                     smart_toy
                 </span>
 
@@ -455,12 +492,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('pembayaran*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('pembayaran*') ? 'filled-icon' : '' }}">
                     payments
                 </span>
 
@@ -482,12 +521,14 @@
                        px-4
                        py-3
                        rounded-xl
-                       text-on-surface-variant
-                       hover:bg-surface-container-low
-                       transition-all"
+                       transition-all
+                       duration-200
+                       {{ request()->routeIs('pengaturan*')
+                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
+                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >
 
-                <span class="material-symbols-outlined">
+                <span class="material-symbols-outlined {{ request()->routeIs('pengaturan*') ? 'filled-icon' : '' }}">
                     settings
                 </span>
 
@@ -620,12 +661,105 @@
     <main
         class="md:ml-64
                flex-1
-               min-h-screen"
+               min-h-screen
+               flex
+               flex-col"
     >
 
-        @yield('content')
+        <!-- TOP NAVBAR HEADER -->
+        <header
+            class="sticky
+                   top-0
+                   right-0
+                   w-full
+                   bg-[#f9f9ff]
+                   border-b-2
+                   border-outline-variant
+                   z-30
+                   flex
+                   justify-between
+                   items-center
+                   px-6
+                   py-3"
+        >
+
+            <div class="flex items-center gap-4">
+
+                <button
+                    type="button"
+                    onclick="toggleSidebar()"
+                    class="md:hidden text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                >
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+
+                <div class="flex flex-col">
+                    <h2 class="font-bold text-on-surface text-base leading-tight">
+                        Selamat datang, {{ auth()->user()->name ?? 'Bp. Yudha' }}
+                    </h2>
+                    <p class="text-xs text-on-surface-variant">
+                        Berikut ringkasan aktivitas klinik hari ini.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="flex items-center gap-3">
+
+                <button
+                    type="button"
+                    class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
+                >
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border border-white"></span>
+                </button>
+
+                <button
+                    type="button"
+                    class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
+                >
+                    <span class="material-symbols-outlined">help</span>
+                </button>
+
+                <div class="w-px h-8 bg-outline-variant mx-1"></div>
+
+                <div class="flex items-center gap-3 p-1 rounded-lg">
+
+                    <span class="text-sm font-semibold text-on-surface hidden sm:inline-block">
+                        {{ auth()->user()->name ?? 'Yudha Tama' }}
+                    </span>
+
+                    <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm overflow-hidden border border-outline-variant">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'Yudha', 0, 2)) }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <div class="flex-1">
+            @yield('content')
+        </div>
 
     </main>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('flex');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('flex');
+                overlay.classList.add('hidden');
+            }
+        }
+    </script>
 
 
 </body>

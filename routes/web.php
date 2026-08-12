@@ -14,7 +14,7 @@ Route::get('/login', function () {
 
     // Kalau sudah login, langsung ke dashboard
     if (Auth::check()) {
-        return redirect('/');
+        return redirect()->route('dashboard');
     }
 
     return view('login');
@@ -72,6 +72,54 @@ Route::get('/', function () {
     return view('dashboard');
 
 })->middleware('auth')->name('dashboard');
+
+// Redirect dari /dashboard ke halaman utama (agar link /dashboard tidak 404)
+Route::get('/dashboard', function () {
+    return redirect()->route('dashboard');
+})->middleware('auth');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| PENDAFTARAN PASIEN
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/pendaftaran', function () {
+
+    return view('pendaftaran');
+
+})->middleware('auth')->name('pendaftaran');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| DATA PASIEN
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/pasien', function () {
+
+    return view('pasien');
+
+})->middleware('auth')->name('pasien');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| REKAM MEDIS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/rekam-medis', function () {
+
+    return view('rekam-medis');
+
+})->middleware('auth')->name('rekam-medis');
+
 
 
 
