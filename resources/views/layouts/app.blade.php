@@ -22,26 +22,84 @@
                         primary: '#006c49',
                         'primary-container': '#10b981',
                         'on-primary-container': '#00422b',
+                        'primary-fixed': '#6ffbbe',
+                        'primary-fixed-dim': '#4edea3',
+                        'on-primary-fixed': '#002113',
+                        'on-primary-fixed-variant': '#005236',
+                        'inverse-primary': '#4edea3',
                         secondary: '#0058be',
                         'secondary-container': '#2170e4',
-                        background: '#F8FAFC',
+                        'on-secondary-container': '#fefcff',
+                        'secondary-fixed': '#d8e2ff',
+                        'secondary-fixed-dim': '#adc6ff',
+                        'on-secondary-fixed': '#001a42',
+                        'on-secondary-fixed-variant': '#004395',
+                        tertiary: '#494bd6',
+                        'tertiary-container': '#9699ff',
+                        'on-tertiary-container': '#1d17b2',
+                        'tertiary-fixed': '#e1e0ff',
+                        'tertiary-fixed-dim': '#c0c1ff',
+                        'on-tertiary-fixed': '#07006c',
+                        'on-tertiary-fixed-variant': '#2f2ebe',
+                        background: '#FAF8FF',
                         surface: '#ffffff',
+                        'surface-bright': '#faf8ff',
+                        'surface-dim': '#d2d9f4',
+                        'surface-variant': '#dae2fd',
+                        'inverse-surface': '#283044',
+                        'inverse-on-surface': '#eef0ff',
                         'on-surface': '#131b2e',
                         'on-surface-variant': '#3c4a42',
+                        'on-background': '#131b2e',
                         outline: '#6c7a71',
-                        'outline-variant': '#E5E7EB',
+                        'outline-variant': '#bbcabf',
                         'surface-container-lowest': '#ffffff',
                         'surface-container-low': '#f2f3ff',
                         'surface-container': '#eaedff',
                         'surface-container-high': '#e2e7ff',
                         'surface-container-highest': '#dae2fd',
-                        'secondary-fixed-dim': '#adc6ff',
                         'error-container': '#ffdad6',
                         'on-error-container': '#93000a',
                         error: '#ba1a1a'
                     },
+                    borderRadius: {
+                        'DEFAULT': '0.25rem',
+                        'lg': '0.5rem',
+                        'xl': '0.75rem',
+                        'full': '9999px'
+                    },
+                    spacing: {
+                        'stack-sm': '8px',
+                        'margin-desktop': '40px',
+                        'container-max': '1440px',
+                        'stack-md': '16px',
+                        'stack-lg': '32px',
+                        'gutter': '24px',
+                        'margin-mobile': '16px',
+                        'unit': '4px'
+                    },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif']
+                        sans: ['Inter', 'sans-serif'],
+                        'body-lg': ['Inter', 'sans-serif'],
+                        'headline-md': ['Inter', 'sans-serif'],
+                        'body-sm': ['Inter', 'sans-serif'],
+                        'display-lg': ['Inter', 'sans-serif'],
+                        'label-md': ['Inter', 'sans-serif'],
+                        'body-md': ['Inter', 'sans-serif'],
+                        'headline-lg': ['Inter', 'sans-serif'],
+                        'label-sm': ['Inter', 'sans-serif'],
+                        'headline-lg-mobile': ['Inter', 'sans-serif']
+                    },
+                    fontSize: {
+                        'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
+                        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
+                        'body-sm': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+                        'display-lg': ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
+                        'label-md': ['14px', { lineHeight: '20px', letterSpacing: '0.01em', fontWeight: '600' }],
+                        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
+                        'headline-lg': ['32px', { lineHeight: '40px', letterSpacing: '-0.01em', fontWeight: '600' }],
+                        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '500' }],
+                        'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '600' }]
                     }
                 }
             }
@@ -180,7 +238,7 @@
 
             <!-- ASUHAN KEPERAWATAN -->
             <a
-                href="#"
+                href="{{ route('asuhan-keperawatan') }}"
                 class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('asuhan-keperawatan*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
@@ -222,7 +280,7 @@
 
             <!-- EVALUASI -->
             <a
-                href="#"
+                href="{{ route('evaluasi') }}"
                 class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('evaluasi*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
@@ -322,10 +380,10 @@
                 </button>
                 <div class="flex flex-col">
                     <h2 class="font-bold text-on-surface text-base leading-tight">
-                        Selamat datang, {{ auth()->user()->name ? 'Bp. ' . auth()->user()->name : 'Bp. Yudha' }}
+                        @yield('header_title', 'Selamat datang, ' . (auth()->user()->name ? 'Bp. ' . auth()->user()->name : 'Bp. Yudha'))
                     </h2>
                     <p class="text-xs text-on-surface-variant">
-                        Berikut ringkasan aktivitas klinik hari ini.
+                        @yield('header_subtitle', 'Berikut ringkasan aktivitas klinik hari ini.')
                     </p>
                 </div>
             </div>

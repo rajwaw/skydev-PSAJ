@@ -131,15 +131,29 @@ Route::get('/rekam-medis', function () {
 
 /*
 |--------------------------------------------------------------------------
-| PENDAFTARAN
+| ASUHAN KEPERAWATAN
 |--------------------------------------------------------------------------
 */
 
-Route::get('/pendaftaran', function () {
+Route::get('/asuhan-keperawatan', function () {
 
-    return view('pendaftaran');
+    return view('asuhan-keperawatan');
 
-})->middleware('auth')->name('pendaftaran');
+})->middleware('auth')->name('asuhan-keperawatan');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| EVALUASI
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/evaluasi', function () {
+
+    return view('evaluasi');
+
+})->middleware('auth')->name('evaluasi');
 
 
 
