@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PendaftaranController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +92,11 @@ Route::get('/pendaftaran', function () {
     return view('pendaftaran');
 
 })->middleware('auth')->name('pendaftaran');
+
+
+Route::post('/pendaftaran', [PendaftaranController::class, 'store'])
+    ->middleware('auth')
+    ->name('pendaftaran.store');
 
 
 
