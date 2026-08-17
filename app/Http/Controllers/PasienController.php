@@ -81,4 +81,43 @@ class PasienController extends Controller
             'search'
         ));
     }
+
+    /**
+     * Menghapus data pasien dan riwayat pendaftarannya dari database.
+     */
+    public function destroy($id)
+    {
+        $pasien = Pasien::where('id_pasien', $id)->first();
+
+        if (!$pasien) {
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data pasien tidak ditemukan.'
+                ], 404);
+            }
+            return redirect()->route('pasien')->with('error', 'Data pasien tidak ditemukan.');
+        }
+
+        $nama = $pasien->nama_lengkap;
+
+        // Gunakan database transaction untuk menghapus pendaftaran & pasien
+        DB::transaction(function () use ($id) {
+            DB::table('pendaftaran')->where('id_pasien', $id)->delete();
+            Pasien::where('id_pasien', $id)->delete();
+        });
+
+        // Hitung ulang total pasien setelah penghapusan
+        $totalPasien = Pasien::count();
+
+        if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => "Data pasien {$nama} berhasil dihapus dari sistem.",
+                'total' => $totalPasien
+            ]);
+        }
+
+        return redirect()->route('pasien')->with('success', "Data pasien {$nama} berhasil dihapus dari sistem.");
+    }
 }

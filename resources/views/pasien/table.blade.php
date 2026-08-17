@@ -1,10 +1,20 @@
 @forelse ($pasiens as $index => $pasien)
-    <tr class="hover:bg-surface-container-low transition-colors">
+    <tr class="hover:bg-surface-container-low transition-all duration-200" id="pasien-row-{{ $pasien->id_pasien }}">
         <td class="py-3.5 px-4 sm:px-6 text-sm text-on-surface-variant whitespace-nowrap">
             {{ sprintf('%02d', ($pasiens->firstItem() ?? 1) + $index) }}
         </td>
         <td class="py-3.5 px-4 sm:px-6 text-sm font-semibold whitespace-nowrap">
-            {{ $pasien->nama_lengkap }}
+            <div class="flex items-center gap-2">
+                <span class="text-on-surface">{{ $pasien->nama_lengkap }}</span>
+                <button 
+                    type="button"
+                    onclick="confirmDeletePasien('{{ $pasien->id_pasien }}', '{{ addslashes($pasien->nama_lengkap) }}')"
+                    class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1 rounded-lg transition-colors flex items-center justify-center shrink-0"
+                    title="Hapus {{ $pasien->nama_lengkap }}"
+                >
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+            </div>
         </td>
         <td class="py-3.5 px-4 sm:px-6 text-sm whitespace-nowrap">
             {{ $pasien->nik }}
@@ -48,9 +58,19 @@
             @endif
         </td>
         <td class="py-3.5 px-4 sm:px-6 text-right whitespace-nowrap">
-            <a href="{{ route('rekam-medis') }}?id={{ $pasien->id_pasien }}" class="inline-flex items-center justify-center text-[#1A73E8] hover:text-[#1557B0] transition-colors p-1.5 rounded-lg hover:bg-[#E8F0FE]" title="Lihat Rekam Medis">
-                <span class="material-symbols-outlined">chevron_right</span>
-            </a>
+            <div class="inline-flex items-center justify-end gap-1">
+                <a href="{{ route('rekam-medis') }}?id={{ $pasien->id_pasien }}" class="inline-flex items-center justify-center text-[#1A73E8] hover:text-[#1557B0] transition-colors p-1.5 rounded-lg hover:bg-[#E8F0FE]" title="Lihat Rekam Medis">
+                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                </a>
+                <button 
+                    type="button" 
+                    onclick="confirmDeletePasien('{{ $pasien->id_pasien }}', '{{ addslashes($pasien->nama_lengkap) }}')" 
+                    class="inline-flex items-center justify-center text-red-500 hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50" 
+                    title="Hapus data pasien"
+                >
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+            </div>
         </td>
     </tr>
 @empty

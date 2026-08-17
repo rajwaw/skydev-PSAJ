@@ -110,6 +110,10 @@ Route::get('/pasien', [PasienController::class, 'index'])
     ->middleware('auth')
     ->name('pasien');
 
+Route::delete('/pasien/{id}', [PasienController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('pasien.destroy');
+
 
 
 /*
