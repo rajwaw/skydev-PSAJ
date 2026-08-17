@@ -49,7 +49,7 @@ class PasienController extends Controller
                     ->limit(1);
             }, 'kunjungan_terakhir');
 
-        // Filter pencarian berdasarkan nama, NIK, telepon, atau alamat
+        // Filter pencarian seluruh database berdasarkan nama, NIK, telepon, atau alamat
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -63,6 +63,15 @@ class PasienController extends Controller
         $pasiens = $query->orderByDesc('id_pasien')
             ->paginate(10)
             ->withQueryString();
+
+        // Jika request via AJAX / Live search dari input
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest' || $request->query('ajax')) {
+            return response()->json([
+                'tbody' => view('pasien.table', compact('pasiens', 'search'))->render(),
+                'pagination' => view('pasien.pagination', compact('pasiens'))->render(),
+                'total' => $pasiens->total(),
+            ]);
+        }
 
         return view('pasien', compact(
             'pasiens',
