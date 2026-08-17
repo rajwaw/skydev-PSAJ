@@ -5,9 +5,9 @@
 @section('header_subtitle', 'Catat dan pantau hasil evaluasi pasien setelah tindakan.')
 
 @section('content')
-<div class="p-6 md:p-8 lg:p-10 w-full max-w-[1440px] mx-auto space-y-6">
+<div class="p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-7xl mx-auto space-y-6">
     <!-- Section 1: Pilih Pasien -->
-    <section class="bg-surface rounded-xl border border-outline-variant p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)]">
+    <section class="bg-surface rounded-xl border border-outline-variant p-4 sm:p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)]">
         <h3 class="font-headline-md text-headline-md text-on-surface mb-stack-md">Pasien</h3>
         <div class="mb-stack-md relative max-w-2xl">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>

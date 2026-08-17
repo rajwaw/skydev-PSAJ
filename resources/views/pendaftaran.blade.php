@@ -61,18 +61,18 @@
     </div>
 </div>
 
-<div class="p-6 md:p-8 lg:p-10 w-full max-w-[1440px] mx-auto">
+<div class="p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-7xl mx-auto space-y-6 sm:space-y-8">
 
     {{-- ============================= --}}
     {{-- HEADER --}}
     {{-- ============================= --}}
 
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-on-surface">
+    <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
             Pendaftaran Pasien
         </h1>
 
-        <p class="text-base text-on-surface-variant mt-2">
+        <p class="text-sm sm:text-base text-on-surface-variant mt-1">
             Daftarkan pasien baru atau cari pasien yang sudah terdaftar.
         </p>
     </div>
@@ -82,28 +82,28 @@
     {{-- PILIHAN PASIEN --}}
     {{-- ============================= --}}
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
         {{-- PASIEN BARU --}}
-        <div class="bg-white rounded-xl border border-outline-variant p-6 card-shadow flex flex-col items-start hover:border-primary transition-colors">
+        <div class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow flex flex-col items-start hover:border-primary transition-colors">
 
-            <div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary mb-4">
-                <span class="material-symbols-outlined">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-3 sm:mb-4">
+                <span class="material-symbols-outlined text-2xl">
                     person_add
                 </span>
             </div>
 
-            <h3 class="text-xl font-semibold text-on-surface mb-2">
+            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-1 sm:mb-2">
                 Pasien Baru
             </h3>
 
-            <p class="text-sm text-on-surface-variant mb-6">
+            <p class="text-xs sm:text-sm text-on-surface-variant mb-5 sm:mb-6">
                 Daftarkan pasien yang belum memiliki data.
             </p>
 
             <a
                 href="#form-pendaftaran"
-                class="bg-primary text-white font-semibold py-3 px-6 rounded-lg w-full text-center hover:bg-[#005a3c] transition-colors"
+                class="bg-primary text-white font-semibold py-2.5 sm:py-3 px-6 rounded-lg w-full text-center hover:bg-[#005a3c] transition-colors text-sm mt-auto shadow-sm"
             >
                 Pasien Baru
             </a>
@@ -112,25 +112,25 @@
 
 
         {{-- PASIEN LAMA --}}
-        <div class="bg-white rounded-xl border border-outline-variant p-6 card-shadow flex flex-col items-start hover:border-secondary transition-colors">
+        <div class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow flex flex-col items-start hover:border-secondary transition-colors">
 
-            <div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary mb-4">
-                <span class="material-symbols-outlined">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary mb-3 sm:mb-4">
+                <span class="material-symbols-outlined text-2xl">
                     search
                 </span>
             </div>
 
-            <h3 class="text-xl font-semibold text-on-surface mb-2">
+            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-1 sm:mb-2">
                 Pasien Lama
             </h3>
 
-            <p class="text-sm text-on-surface-variant mb-6">
+            <p class="text-xs sm:text-sm text-on-surface-variant mb-5 sm:mb-6">
                 Cari pasien yang sudah terdaftar.
             </p>
 
             <a
                 href="#cari-pasien"
-                class="bg-transparent text-secondary border border-secondary font-semibold py-3 px-6 rounded-lg w-full text-center hover:bg-secondary hover:text-white transition-colors"
+                class="bg-transparent text-secondary border border-secondary font-semibold py-2.5 sm:py-3 px-6 rounded-lg w-full text-center hover:bg-secondary hover:text-white transition-colors text-sm mt-auto"
             >
                 Cari Pasien
             </a>
@@ -429,11 +429,11 @@
                 {{-- BUTTON --}}
                 {{-- ============================= --}}
 
-                <div class="flex justify-end gap-4 pt-6 border-t border-outline-variant">
+                <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-outline-variant">
 
                     <a
                         href="{{ route('dashboard') }}"
-                        class="bg-transparent text-secondary border border-secondary font-semibold py-2.5 px-6 rounded-lg hover:bg-secondary-container hover:border-transparent hover:text-white transition-colors text-center inline-block text-sm"
+                        class="bg-transparent text-secondary border border-secondary font-semibold py-2.5 px-6 rounded-lg hover:bg-secondary/5 transition-colors text-center inline-block text-sm"
                     >
                         Batal
                     </a>
@@ -464,35 +464,38 @@
         class="bg-white rounded-xl border border-outline-variant card-shadow overflow-hidden"
     >
 
-        <div class="p-6 border-b border-outline-variant">
+        <div class="p-4 sm:p-6 border-b border-outline-variant">
 
-            <h3 class="text-xl font-semibold text-on-surface mb-4">
+            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-3 sm:mb-4">
                 Cari Pasien Lama
             </h3>
 
             <form
-                action="{{ route('pasien.index') }}"
+                action="{{ route('pasien') }}"
                 method="GET"
             >
 
-                <div class="relative">
+                <div class="relative flex flex-col sm:flex-row gap-2">
 
-                    <span class="material-symbols-outlined absolute left-4 top-3.5 text-on-surface-variant">
-                        search
-                    </span>
+                    <div class="relative flex-1">
+                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">
+                            search
+                        </span>
 
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ request('search') }}"
-                        placeholder="Cari berdasarkan nama, NIK, atau nomor telepon..."
-                        class="w-full bg-surface border border-outline-variant rounded-xl pl-12 pr-24 py-3 text-sm text-on-surface placeholder-on-surface-variant/60 input-ring"
-                    >
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari berdasarkan nama, NIK, atau nomor telepon..."
+                            class="w-full bg-surface border border-outline-variant rounded-xl pl-10 pr-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 input-ring"
+                        >
+                    </div>
 
                     <button
                         type="submit"
-                        class="absolute right-2 top-1.5 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold"
+                        class="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#005a3c] transition-colors shadow-sm flex items-center justify-center gap-1.5 shrink-0"
                     >
+                        <span class="material-symbols-outlined text-sm">search</span>
                         Cari
                     </button>
 

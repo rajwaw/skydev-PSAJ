@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full">
 <head>
     <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" name="viewport">
     <title>@yield('title', 'Mandalacare')</title>
 
     <!-- Google Font -->
@@ -18,6 +18,9 @@
             darkMode: "class",
             theme: {
                 extend: {
+                    screens: {
+                        'xs': '480px',
+                    },
                     colors: {
                         primary: '#006c49',
                         'primary-container': '#10b981',
@@ -52,7 +55,7 @@
                         'on-surface-variant': '#3c4a42',
                         'on-background': '#131b2e',
                         outline: '#6c7a71',
-                        'outline-variant': '#bbcabf',
+                        'outline-variant': '#E5E7EB',
                         'surface-container-lowest': '#ffffff',
                         'surface-container-low': '#f2f3ff',
                         'surface-container': '#eaedff',
@@ -66,40 +69,11 @@
                         'DEFAULT': '0.25rem',
                         'lg': '0.5rem',
                         'xl': '0.75rem',
+                        '2xl': '1rem',
                         'full': '9999px'
                     },
-                    spacing: {
-                        'stack-sm': '8px',
-                        'margin-desktop': '40px',
-                        'container-max': '1440px',
-                        'stack-md': '16px',
-                        'stack-lg': '32px',
-                        'gutter': '24px',
-                        'margin-mobile': '16px',
-                        'unit': '4px'
-                    },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        'body-lg': ['Inter', 'sans-serif'],
-                        'headline-md': ['Inter', 'sans-serif'],
-                        'body-sm': ['Inter', 'sans-serif'],
-                        'display-lg': ['Inter', 'sans-serif'],
-                        'label-md': ['Inter', 'sans-serif'],
-                        'body-md': ['Inter', 'sans-serif'],
-                        'headline-lg': ['Inter', 'sans-serif'],
-                        'label-sm': ['Inter', 'sans-serif'],
-                        'headline-lg-mobile': ['Inter', 'sans-serif']
-                    },
-                    fontSize: {
-                        'body-lg': ['18px', { lineHeight: '28px', fontWeight: '400' }],
-                        'headline-md': ['24px', { lineHeight: '32px', fontWeight: '600' }],
-                        'body-sm': ['14px', { lineHeight: '20px', fontWeight: '400' }],
-                        'display-lg': ['48px', { lineHeight: '56px', letterSpacing: '-0.02em', fontWeight: '700' }],
-                        'label-md': ['14px', { lineHeight: '20px', letterSpacing: '0.01em', fontWeight: '600' }],
-                        'body-md': ['16px', { lineHeight: '24px', fontWeight: '400' }],
-                        'headline-lg': ['32px', { lineHeight: '40px', letterSpacing: '-0.01em', fontWeight: '600' }],
-                        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.02em', fontWeight: '500' }],
-                        'headline-lg-mobile': ['24px', { lineHeight: '32px', fontWeight: '600' }]
+                        sans: ['Inter', 'sans-serif']
                     }
                 }
             }
@@ -111,6 +85,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #F8FAFC;
             color: #131b2e;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .material-symbols-outlined {
@@ -138,52 +113,66 @@
             border-color: #006c49;
             box-shadow: 0 0 0 3px rgba(0, 108, 73, 0.2);
         }
+
+        /* Custom smooth scrollbar for tables */
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 
-<body class="bg-background min-h-screen flex text-on-surface">
+<body class="bg-background min-h-screen flex flex-col md:flex-row text-on-surface antialiased overflow-x-hidden">
 
     <!-- MOBILE SIDEBAR OVERLAY -->
     <div
         id="sidebar-overlay"
         onclick="toggleSidebar()"
-        class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0 md:hidden"
     ></div>
 
     <!-- SIDEBAR -->
     <aside
         id="sidebar"
-        class="hidden
-               md:flex
-               flex-col
-               h-screen
-               w-64
-               fixed
-               left-0
-               top-0
-               bg-[#f9f9ff]
-               border-r-2
-               border-outline-variant
-               z-50
-               p-4"
+        class="fixed top-0 left-0 bottom-0 z-50 w-72 md:w-64 bg-[#f9f9ff] border-r-2 border-outline-variant flex flex-col h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out p-4 shadow-2xl md:shadow-none"
     >
-
-        <!-- LOGO -->
-        <div class="px-4 mb-6 py-4">
-            <h1 class="text-[22px] font-bold text-primary">
-                Mandalacare
-            </h1>
-            <p class="text-[12px] text-outline font-medium mt-1">
-                Clinical Management
-            </p>
+        <!-- LOGO & CLOSE BUTTON -->
+        <div class="px-3 mb-4 py-3 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl sm:text-[22px] font-bold text-primary tracking-tight">
+                    Mandalacare
+                </h1>
+                <p class="text-[11px] sm:text-[12px] text-outline font-medium">
+                    Clinical Management
+                </p>
+            </div>
+            <!-- Mobile Close Button -->
+            <button
+                type="button"
+                onclick="toggleSidebar()"
+                class="md:hidden text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container transition-colors"
+                title="Tutup Menu"
+            >
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
         </div>
 
         <!-- MENU -->
-        <nav class="flex-1 overflow-y-auto space-y-1">
+        <nav class="flex-1 overflow-y-auto space-y-1 pr-1">
             <!-- DASHBOARD -->
             <a
                 href="{{ route('dashboard') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('dashboard*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -197,7 +186,7 @@
             <!-- PENDAFTARAN -->
             <a
                 href="{{ route('pendaftaran') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('pendaftaran*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -211,7 +200,7 @@
             <!-- PASIEN -->
             <a
                 href="{{ route('pasien') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('pasien*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -225,7 +214,7 @@
             <!-- REKAM MEDIS -->
             <a
                 href="{{ route('rekam-medis') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('rekam-medis*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -239,7 +228,7 @@
             <!-- ASUHAN KEPERAWATAN -->
             <a
                 href="{{ route('asuhan-keperawatan') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('asuhan-keperawatan*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -253,7 +242,7 @@
             <!-- EVALUASI -->
             <a
                 href="{{ route('evaluasi') }}"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('evaluasi*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -267,7 +256,7 @@
             <!-- AI CLINICAL ASSISTANT -->
             <a
                 href="#"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('ai*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -281,7 +270,7 @@
             <!-- PEMBAYARAN -->
             <a
                 href="#"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('pembayaran*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -295,7 +284,7 @@
             <!-- PENGATURAN -->
             <a
                 href="#"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('pengaturan*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
@@ -308,9 +297,9 @@
         </nav>
 
         <!-- ACCOUNT + LOGOUT -->
-        <div class="pt-4 mt-4 border-t border-outline-variant">
-            <div class="flex items-center gap-3 px-2 mb-3">
-                <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+        <div class="pt-3 mt-2 border-t border-outline-variant">
+            <div class="flex items-center gap-3 px-2 mb-2">
+                <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs shrink-0">
                     {{ strtoupper(substr(auth()->user()->name ?? 'Yudha', 0, 2)) }}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -327,66 +316,70 @@
                 @csrf
                 <button
                     type="submit"
-                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 transition-all text-sm font-semibold"
                 >
-                    <span class="material-symbols-outlined">logout</span>
-                    <span class="text-sm font-semibold">Keluar</span>
+                    <span class="material-symbols-outlined text-xl">logout</span>
+                    <span>Keluar</span>
                 </button>
             </form>
         </div>
     </aside>
 
     <!-- MAIN CONTENT CONTAINER -->
-    <main class="md:ml-64 flex-1 min-h-screen flex flex-col">
+    <main class="md:ml-64 flex-1 min-h-screen flex flex-col w-full min-w-0">
         <!-- TOP NAVBAR HEADER -->
         <header
-            class="sticky top-0 right-0 w-full bg-[#f9f9ff] border-b-2 border-outline-variant z-30 flex justify-between items-center px-6 py-3"
+            class="sticky top-0 right-0 w-full bg-[#f9f9ff]/95 backdrop-blur-md border-b-2 border-outline-variant z-30 flex justify-between items-center px-4 sm:px-6 py-2.5 sm:py-3 transition-all"
         >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                 <button
                     type="button"
                     onclick="toggleSidebar()"
-                    class="md:hidden text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                    class="md:hidden text-on-surface p-2 rounded-lg hover:bg-surface-container-low transition-colors shrink-0 flex items-center justify-center"
+                    aria-label="Buka Menu"
                 >
-                    <span class="material-symbols-outlined">menu</span>
+                    <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <div class="flex flex-col">
-                    <h2 class="font-bold text-on-surface text-base leading-tight">
+                <div class="flex flex-col min-w-0">
+                    <h2 class="font-bold text-on-surface text-sm sm:text-base leading-tight truncate">
                         @yield('header_title', 'Selamat datang, ' . (auth()->user()->name ? 'Bp. ' . auth()->user()->name : 'Bp. Yudha'))
                     </h2>
-                    <p class="text-xs text-on-surface-variant">
+                    <p class="text-xs text-on-surface-variant truncate hidden xs:block">
                         @yield('header_subtitle', 'Berikut ringkasan aktivitas klinik hari ini.')
                     </p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
                 <button
                     type="button"
                     class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
+                    aria-label="Notifikasi"
                 >
-                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="material-symbols-outlined text-xl sm:text-2xl">notifications</span>
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border border-white"></span>
                 </button>
                 <button
                     type="button"
-                    class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
+                    class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors hidden sm:inline-flex"
+                    aria-label="Bantuan"
                 >
-                    <span class="material-symbols-outlined">help</span>
+                    <span class="material-symbols-outlined text-xl sm:text-2xl">help</span>
                 </button>
-                <div class="w-px h-8 bg-outline-variant mx-1"></div>
-                <div class="flex items-center gap-3 p-1 rounded-lg">
-                    <span class="text-sm font-semibold text-on-surface hidden sm:inline-block">
+                <div class="w-px h-6 bg-outline-variant mx-1 hidden sm:block"></div>
+                <div class="flex items-center gap-2 sm:gap-3 p-1 rounded-lg">
+                    <span class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate">
                         {{ auth()->user()->name ?? 'Yudha Tama' }}
                     </span>
-                    <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm overflow-hidden border border-outline-variant">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs sm:text-sm overflow-hidden border border-outline-variant shrink-0">
                         {{ strtoupper(substr(auth()->user()->name ?? 'Yudha', 0, 2)) }}
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="flex-1">
+        <!-- PAGE CONTENT -->
+        <div class="flex-1 w-full min-w-0">
             @yield('content')
         </div>
     </main>
@@ -395,14 +388,23 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                sidebar.classList.add('flex');
+            if (!sidebar || !overlay) return;
+
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                // Open Drawer
                 overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                document.body.style.overflow = 'hidden';
             } else {
-                sidebar.classList.add('hidden');
-                sidebar.classList.remove('flex');
-                overlay.classList.add('hidden');
+                // Close Drawer
+                overlay.classList.add('opacity-0');
+                sidebar.classList.remove('translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+                document.body.style.overflow = '';
             }
         }
     </script>

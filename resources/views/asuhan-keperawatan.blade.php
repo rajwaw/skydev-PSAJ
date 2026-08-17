@@ -14,15 +14,15 @@
     }
 </style>
 
-<main class="flex-1 w-full min-h-screen bg-[#f8fafc] px-6 md:px-10 py-8">
+<div class="p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-7xl mx-auto flex-1 flex flex-col gap-6">
 
     <!-- Page Header -->
-    <div class="mb-8">
-        <h2 class="text-3xl font-semibold text-[#131b2e]">
+    <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">
             Asuhan Keperawatan
-        </h2>
+        </h1>
 
-        <p class="text-base text-[#3c4a42] mt-1">
+        <p class="text-sm sm:text-base text-on-surface-variant mt-1">
             Kelola rencana asuhan keperawatan pasien secara terstruktur.
         </p>
     </div>
@@ -660,6 +660,6 @@
 
     </div>
 
-</main>
+</div>
 
 @endsection
