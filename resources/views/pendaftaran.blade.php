@@ -4,6 +4,63 @@
 
 @section('content')
 
+{{-- ========================================================== --}}
+{{-- NOTIFIKASI TOAST (BAGIAN ATAS DENGAN AKSEN WARNA HIJAU) --}}
+{{-- ========================================================== --}}
+<div id="toastNotification" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-lg pointer-events-none transition-all duration-300 transform -translate-y-16 opacity-0 hidden">
+    <div id="toastCard" class="pointer-events-auto bg-white border-2 border-primary/40 rounded-2xl shadow-2xl p-4 md:p-5 flex items-start gap-4 backdrop-blur-md bg-white/95 relative overflow-hidden">
+        <!-- Green Accent Bar on the Left -->
+        <div id="toastAccentBar" class="absolute left-0 top-0 bottom-0 w-2 bg-primary"></div>
+        
+        <!-- Green Icon Badge -->
+        <div id="toastIconContainer" class="w-11 h-11 rounded-xl bg-[#E5F5F0] text-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+            <span id="toastIcon" class="material-symbols-outlined text-2xl font-bold">check_circle</span>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 min-w-0 pr-2">
+            <div class="flex items-center gap-2 mb-1">
+                <span id="toastBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E5F5F0] text-primary">
+                    Pendaftaran Berhasil
+                </span>
+                <span class="text-xs text-on-surface-variant font-medium">Baru saja</span>
+            </div>
+            
+            <h4 class="text-base font-bold text-on-surface" id="toastTitle">
+                Data Pasien Berhasil Disimpan!
+            </h4>
+            
+            <p class="text-sm text-on-surface-variant mt-1" id="toastMessage">
+                Data kunjungan pasien telah berhasil didaftarkan ke dalam sistem.
+            </p>
+
+            <!-- Metadata Badges (Antrean & ID Pasien) -->
+            <div id="toastMeta" class="mt-3 flex flex-wrap items-center gap-2 pt-2 border-t border-outline-variant/60">
+                <div class="flex items-center gap-1.5 bg-[#E5F5F0] px-3 py-1 rounded-lg border border-primary/20 text-xs">
+                    <span class="text-on-surface-variant font-medium">Nomor Antrean:</span>
+                    <span class="font-bold text-primary text-sm" id="toastNoAntrean">01</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1 rounded-lg border border-outline-variant text-xs">
+                    <span class="text-on-surface-variant font-medium">ID Pasien:</span>
+                    <span class="font-semibold text-on-surface" id="toastIdPasien">#1</span>
+                </div>
+                <a href="{{ route('pasien') }}" class="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                    Lihat Data Pasien
+                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <button type="button" onclick="hideToastNotification()" class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg hover:bg-surface-container transition-colors flex-shrink-0" title="Tutup Notifikasi">
+            <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+
+        <!-- Auto-dismiss Progress Bar -->
+        <div id="toastProgress" class="absolute bottom-0 left-0 h-1 bg-primary w-full transition-all linear"></div>
+    </div>
+</div>
+
 <div class="p-6 md:p-8 lg:p-10 w-full max-w-[1440px] mx-auto">
 
     {{-- ============================= --}}
@@ -515,319 +572,230 @@
 </div>
 
 {{-- ============================= --}}
-{{-- POPUP NOTIFIKASI --}}
-{{-- ============================= --}}
-
-<div
-    id="notificationModal"
-    class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4"
->
-    <div
-        class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
-    >
-
-        {{-- ICON --}}
-        <div class="flex justify-center pt-7">
-
-            <div
-                id="notificationIcon"
-                class="w-16 h-16 rounded-full flex items-center justify-center bg-green-100 text-green-600"
-            >
-                <span
-                    id="notificationIconSymbol"
-                    class="material-symbols-outlined text-4xl"
-                >
-                    check_circle
-                </span>
-            </div>
-
-        </div>
-
-
-        {{-- ISI POPUP --}}
-        <div class="px-6 py-5 text-center">
-
-            <h3
-                id="notificationTitle"
-                class="text-xl font-bold text-gray-900"
-            >
-                Data Berhasil Disimpan
-            </h3>
-
-            <p
-                id="notificationMessage"
-                class="text-sm text-gray-600 mt-3 whitespace-pre-line leading-6"
-            ></p>
-
-        </div>
-
-
-        {{-- BUTTON --}}
-        <div class="px-6 pb-6">
-
-            <button
-                type="button"
-                id="notificationClose"
-                class="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-[#005a3c] transition-colors"
-            >
-                OK
-            </button>
-
-        </div>
-
-    </div>
-</div>
-
-
-{{-- ============================= --}}
-{{-- JAVASCRIPT SUBMIT FORM --}}
+{{-- JAVASCRIPT SUBMIT FORM & NOTIFIKASI --}}
 {{-- ============================= --}}
 
 <script>
+
+let toastTimer = null;
+
+function showSuccessToast(title, message, noAntrean, idPasien) {
+    const toast = document.getElementById('toastNotification');
+    const toastCard = document.getElementById('toastCard');
+    const toastAccentBar = document.getElementById('toastAccentBar');
+    const toastIconContainer = document.getElementById('toastIconContainer');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastBadge = document.getElementById('toastBadge');
+    const titleEl = document.getElementById('toastTitle');
+    const msgEl = document.getElementById('toastMessage');
+    const metaEl = document.getElementById('toastMeta');
+    const antreanEl = document.getElementById('toastNoAntrean');
+    const idPasienEl = document.getElementById('toastIdPasien');
+    const progressEl = document.getElementById('toastProgress');
+
+    if (!toast) return;
+
+    clearTimeout(toastTimer);
+
+    // Styling Aksen Hijau
+    toastCard.className = "pointer-events-auto bg-white border-2 border-primary/40 rounded-2xl shadow-2xl p-4 md:p-5 flex items-start gap-4 backdrop-blur-md bg-white/95 relative overflow-hidden";
+    toastAccentBar.className = "absolute left-0 top-0 bottom-0 w-2 bg-primary";
+    toastIconContainer.className = "w-11 h-11 rounded-xl bg-[#E5F5F0] text-primary flex items-center justify-center flex-shrink-0 shadow-sm";
+    toastIcon.innerText = "check_circle";
+    toastBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#E5F5F0] text-primary";
+    toastBadge.innerText = "Pendaftaran Berhasil";
+    progressEl.className = "absolute bottom-0 left-0 h-1 bg-primary w-full transition-all linear";
+
+    // Text & Data
+    titleEl.innerText = title || 'Data Pasien Berhasil Disimpan!';
+    msgEl.innerText = message || 'Pasien berhasil didaftarkan dan nomor antrean telah diterbitkan.';
+
+    if (noAntrean !== undefined && noAntrean !== null) {
+        antreanEl.innerText = String(noAntrean).padStart(2, '0');
+        idPasienEl.innerText = '#' + idPasien;
+        metaEl.classList.remove('hidden');
+    } else {
+        metaEl.classList.add('hidden');
+    }
+
+    // Reset progress bar
+    progressEl.style.width = '100%';
+    progressEl.style.transition = 'none';
+
+    // Animasi muncul dari atas
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+        toast.classList.remove('-translate-y-16', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+
+        setTimeout(() => {
+            progressEl.style.transition = 'width 5000ms linear';
+            progressEl.style.width = '0%';
+        }, 50);
+    }, 10);
+
+    // Sembunyikan otomatis setelah 5.2 detik
+    toastTimer = setTimeout(() => {
+        hideToastNotification();
+    }, 5200);
+}
+
+function showErrorToast(title, message) {
+    const toast = document.getElementById('toastNotification');
+    const toastCard = document.getElementById('toastCard');
+    const toastAccentBar = document.getElementById('toastAccentBar');
+    const toastIconContainer = document.getElementById('toastIconContainer');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastBadge = document.getElementById('toastBadge');
+    const titleEl = document.getElementById('toastTitle');
+    const msgEl = document.getElementById('toastMessage');
+    const metaEl = document.getElementById('toastMeta');
+    const progressEl = document.getElementById('toastProgress');
+
+    if (!toast) return;
+
+    clearTimeout(toastTimer);
+
+    // Styling Error Merah
+    toastCard.className = "pointer-events-auto bg-white border-2 border-red-500/40 rounded-2xl shadow-2xl p-4 md:p-5 flex items-start gap-4 backdrop-blur-md bg-white/95 relative overflow-hidden";
+    toastAccentBar.className = "absolute left-0 top-0 bottom-0 w-2 bg-red-600";
+    toastIconContainer.className = "w-11 h-11 rounded-xl bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 shadow-sm";
+    toastIcon.innerText = "error";
+    toastBadge.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700";
+    toastBadge.innerText = "Gagal Menyimpan";
+    progressEl.className = "absolute bottom-0 left-0 h-1 bg-red-600 w-full transition-all linear";
+
+    titleEl.innerText = title || 'Gagal Menyimpan Data';
+    msgEl.innerText = message || 'Terjadi kesalahan saat menyimpan data pasien.';
+    metaEl.classList.add('hidden');
+
+    progressEl.style.width = '100%';
+    progressEl.style.transition = 'none';
+
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+        toast.classList.remove('-translate-y-16', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+
+        setTimeout(() => {
+            progressEl.style.transition = 'width 6000ms linear';
+            progressEl.style.width = '0%';
+        }, 50);
+    }, 10);
+
+    toastTimer = setTimeout(() => {
+        hideToastNotification();
+    }, 6200);
+}
+
+function hideToastNotification() {
+    const toast = document.getElementById('toastNotification');
+    if (!toast) return;
+
+    clearTimeout(toastTimer);
+    toast.classList.remove('translate-y-0', 'opacity-100');
+    toast.classList.add('-translate-y-16', 'opacity-0');
+
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 300);
+}
 
 document.addEventListener('DOMContentLoaded', function () {
 
     const form = document.getElementById('formPendaftaran');
     const button = document.getElementById('btnSimpan');
 
-    const modal = document.getElementById('notificationModal');
-    const title = document.getElementById('notificationTitle');
-    const message = document.getElementById('notificationMessage');
-
-    const icon = document.getElementById('notificationIcon');
-    const iconSymbol = document.getElementById('notificationIconSymbol');
-
-    const closeButton = document.getElementById('notificationClose');
-
-
-    // ==========================================
-    // TAMPILKAN POPUP
-    // ==========================================
-
-    function showNotification(type, titleText, messageText) {
-
-        title.innerText = titleText;
-        message.innerText = messageText;
-
-
-        // ==========================
-        // POPUP BERHASIL
-        // ==========================
-
-        if (type === 'success') {
-
-            icon.className =
-                'w-16 h-16 rounded-full flex items-center justify-center bg-green-100 text-green-600';
-
-            iconSymbol.innerText = 'check_circle';
-
-            closeButton.className =
-                'w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-[#005a3c] transition-colors';
-
-        }
-
-
-        // ==========================
-        // POPUP ERROR
-        // ==========================
-
-        else {
-
-            icon.className =
-                'w-16 h-16 rounded-full flex items-center justify-center bg-red-100 text-red-600';
-
-            iconSymbol.innerText = 'error';
-
-            closeButton.className =
-                'w-full bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition-colors';
-
-        }
-
-
-        // Tampilkan popup
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-
+    if (!form) {
+        return;
     }
-
-
-    // ==========================================
-    // TUTUP POPUP
-    // ==========================================
-
-    closeButton.addEventListener('click', function () {
-
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-    });
-
-
-    // ==========================================
-    // SUBMIT FORM
-    // ==========================================
 
     form.addEventListener('submit', async function (event) {
 
         event.preventDefault();
 
-
-        // Disable tombol
         button.disabled = true;
-
         button.innerText = 'Menyimpan...';
-
 
         try {
 
             const formData = new FormData(form);
 
-
             const response = await fetch(form.action, {
-
                 method: 'POST',
 
                 headers: {
-
-                    'X-CSRF-TOKEN':
-                        document.querySelector(
-                            'input[name="_token"]'
-                        ).value,
+                    'X-CSRF-TOKEN': document.querySelector(
+                        'input[name="_token"]'
+                    ).value,
 
                     'Accept': 'application/json'
-
                 },
 
                 body: formData
-
             });
-
 
             const data = await response.json();
 
-
-            // ==========================================
-            // BERHASIL
-            // ==========================================
-
+            // =========================
+            // BERHASIL DISIMPAN (TOAST AKSEN HIJAU)
+            // =========================
             if (response.ok && data.success) {
 
-                showNotification(
-
-                    'success',
-
-                    'Data Berhasil Disimpan',
-
-                    'Data pasien berhasil disimpan.\n\n' +
-
-                    'Nomor Antrean : ' +
-                    data.no_antrean +
-
-                    '\nID Pasien : ' +
+                showSuccessToast(
+                    'Data Pasien Berhasil Disimpan!',
+                    'Data pasien telah tersimpan di database dan nomor antrean berhasil diterbitkan.',
+                    data.no_antrean,
                     data.id_pasien
-
                 );
-
 
                 // Kosongkan form
                 form.reset();
 
-            }
-
-
-            // ==========================================
-            // DATA SUDAH ADA
-            // ==========================================
-
-            else if (response.status === 409) {
-
-                showNotification(
-
-                    'error',
-
-                    'Data Pasien Sudah Ada',
-
-                    data.message ||
-                    'Pasien dengan NIK tersebut sudah terdaftar di sistem.'
-
-                );
+                // Scroll halus ke atas agar notifikasi terlihat jelas
+                window.scrollTo({ top: 0, behavior: 'smooth' });
 
             }
 
-
-            // ==========================================
-            // VALIDASI
-            // ==========================================
-
+            // =========================
+            // GAGAL
+            // =========================
             else {
 
-                let pesan =
-                    data.message ||
-                    'Data gagal disimpan.';
-
+                let pesan = data.message || 'Data gagal disimpan.';
 
                 if (data.errors) {
-
-                    pesan += '\n\n';
-
-                    Object.values(data.errors).forEach(function (error) {
-
-                        pesan +=
-                            '• ' +
-                            error[0] +
-                            '\n';
-
-                    });
-
+                    const errorList = Object.values(data.errors).map(err => err[0]).join(', ');
+                    pesan = errorList || pesan;
                 }
 
+                if (data.error) {
+                    console.error('Database Error:', data.error);
+                }
 
-                showNotification(
-
-                    'error',
-
-                    'Data Gagal Disimpan',
-
-                    pesan
-
-                );
+                showErrorToast('Gagal Menyimpan Data', pesan);
 
             }
 
         }
-
-
-        // ==========================================
-        // ERROR SERVER
-        // ==========================================
 
         catch (error) {
 
             console.error(error);
 
-            showNotification(
-
-                'error',
-
+            showErrorToast(
                 'Terjadi Kesalahan',
-
-                'Tidak dapat terhubung ke server Laravel.'
-
+                'Tidak dapat terhubung ke server Laravel. Silakan coba beberapa saat lagi.'
             );
 
         }
-
-
-        // ==========================================
-        // KEMBALIKAN TOMBOL
-        // ==========================================
 
         finally {
 
             button.disabled = false;
 
-            button.innerText =
-                'Simpan & Mulai Kunjungan';
+            button.innerHTML =
+                'Simpan &amp; Mulai Kunjungan';
 
         }
 

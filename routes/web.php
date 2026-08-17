@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PendaftaranController;
+use App\Http\Controllers\PasienController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,11 +107,9 @@ Route::post('/pendaftaran', [PendaftaranController::class, 'store'])
 |--------------------------------------------------------------------------
 */
 
-Route::get('/pasien', function () {
-
-    return view('pasien');
-
-})->middleware('auth')->name('pasien');
+Route::get('/pasien', [PasienController::class, 'index'])
+    ->middleware('auth')
+    ->name('pasien');
 
 
 
