@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\PasienController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,11 +70,9 @@ Route::post('/login', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-
-    return view('dashboard');
-
-})->middleware('auth')->name('dashboard');
+Route::get('/', [DashboardController::class, 'index'])
+    ->middleware('auth')
+    ->name('dashboard');
 
 // Redirect dari /dashboard ke halaman utama (agar link /dashboard tidak 404)
 Route::get('/dashboard', function () {

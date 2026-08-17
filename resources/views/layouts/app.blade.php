@@ -250,34 +250,6 @@
                 <span class="text-sm font-semibold">Asuhan Keperawatan</span>
             </a>
 
-            <!-- INTERVENSI -->
-            <a
-                href="#"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-                       {{ request()->routeIs('intervensi*')
-                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
-                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
-            >
-                <span class="material-symbols-outlined {{ request()->routeIs('intervensi*') ? 'filled-icon' : '' }}">
-                    healing
-                </span>
-                <span class="text-sm font-semibold">Intervensi</span>
-            </a>
-
-            <!-- IMPLEMENTASI -->
-            <a
-                href="#"
-                class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-                       {{ request()->routeIs('implementasi*')
-                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
-                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
-            >
-                <span class="material-symbols-outlined {{ request()->routeIs('implementasi*') ? 'filled-icon' : '' }}">
-                    fact_check
-                </span>
-                <span class="text-sm font-semibold">Implementasi</span>
-            </a>
-
             <!-- EVALUASI -->
             <a
                 href="{{ route('evaluasi') }}"
