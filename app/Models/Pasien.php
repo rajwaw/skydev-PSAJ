@@ -21,8 +21,55 @@ class Pasien extends Model
         'golongan_darah',
     ];
 
+    protected $appends = [
+        'formatted_tgl_lahir',
+        'formatted_jk',
+        'age',
+        'no_rm',
+        'initials',
+    ];
+
     /**
-     * Format tanggal lahir ke bahasa Indonesia (aman tanpa ekstensi intl).
+     * Format nomor rekam medis otomatis (contoh: RM-2026-016).
+     */
+    public function getNoRmAttribute()
+    {
+        $year = $this->created_at ? Carbon::parse($this->created_at)->format('Y') : date('Y');
+        return 'RM-' . $year . '-' . str_pad($this->id_pasien, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Inisial nama (contoh: Andi Pratama -> AP).
+     */
+    public function getInitialsAttribute()
+    {
+        $words = preg_split('/\s+/', trim((string) $this->nama_lengkap));
+        $initials = '';
+        foreach ($words as $w) {
+            if (!empty($w)) {
+                $initials .= mb_substr($w, 0, 1);
+            }
+        }
+        return strtoupper(mb_substr($initials, 0, 2)) ?: 'PS';
+    }
+
+    /**
+     * Hitung umur pasien berdasarkan tanggal lahir.
+     */
+    public function getAgeAttribute()
+    {
+        if (!$this->tgl_lahir) {
+            return '-';
+        }
+        try {
+            return Carbon::parse($this->tgl_lahir)->age . ' thn';
+        } catch (\Exception $e) {
+            return '-';
+        }
+    }
+
+    /**
+     * Format tanggal lahir ke bahasa Indonesia.
      */
     public function getFormattedTglLahirAttribute()
     {
@@ -70,5 +117,31 @@ class Pasien extends Model
     public function pendaftarans()
     {
         return $this->hasMany(Pendaftaran::class, 'id_pasien', 'id_pasien');
+    }
+
+    public function pendaftaranTerbaru()
+    {
+        return $this->hasOne(Pendaftaran::class, 'id_pasien', 'id_pasien')->latestOfMany('id_pendaftaran');
+    }
+
+    /**
+     * Relasi ke rekam medis.
+     */
+    public function rekamMedis()
+    {
+        return $this->hasMany(RekamMedis::class, 'id_pasien', 'id_pasien')->orderByDesc('tgl_pemeriksaan');
+    }
+
+    public function rekamMedisTerbaru()
+    {
+        return $this->hasOne(RekamMedis::class, 'id_pasien', 'id_pasien')->latestOfMany('id_rekam_medis');
+    }
+
+    /**
+     * Relasi ke alergi obat.
+     */
+    public function alergis()
+    {
+        return $this->hasMany(AlergiObat::class, 'id_pasien', 'id_pasien');
     }
 }

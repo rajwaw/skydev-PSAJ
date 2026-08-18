@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\PasienController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AsuhanKeperawatanController;
+use App\Http\Controllers\RekamMedisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,12 +124,13 @@ Route::delete('/pasien/{id}', [PasienController::class, 'destroy'])
 |--------------------------------------------------------------------------
 */
 
-Route::get('/rekam-medis', function () {
+Route::get('/rekam-medis', [RekamMedisController::class, 'index'])
+    ->middleware('auth')
+    ->name('rekam-medis');
 
-    return view('rekam-medis');
-
-})->middleware('auth')->name('rekam-medis');
-
+Route::get('/rekam-medis/pasien/{id}', [RekamMedisController::class, 'getPasienRM'])
+    ->middleware('auth')
+    ->name('rekam-medis.pasien.detail');
 
 
 
@@ -137,11 +140,17 @@ Route::get('/rekam-medis', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/asuhan-keperawatan', function () {
+Route::get('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'index'])
+    ->middleware('auth')
+    ->name('asuhan-keperawatan');
 
-    return view('asuhan-keperawatan');
+Route::post('/asuhan-keperawatan', [AsuhanKeperawatanController::class, 'store'])
+    ->middleware('auth')
+    ->name('asuhan-keperawatan.store');
 
-})->middleware('auth')->name('asuhan-keperawatan');
+Route::get('/asuhan-keperawatan/pasien/{id}', [AsuhanKeperawatanController::class, 'getPasienDetail'])
+    ->middleware('auth')
+    ->name('asuhan-keperawatan.pasien.detail');
 
 
 
