@@ -18,6 +18,7 @@ class PendaftaranController extends Controller
             'alamat' => 'nullable|string',
             'telepon' => 'nullable|string|max:20',
             'golongan_darah' => 'nullable|in:A,B,AB,O',
+            'alergi_obat' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -79,7 +80,40 @@ class PendaftaranController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 3. Buat nomor antrean
+            | 3. Simpan Alergi Obat ke Database (Tabel alergi_obat)
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->filled('alergi_obat')) {
+                $alergiInput = trim((string) $request->alergi_obat);
+                $lower = strtolower($alergiInput);
+
+                if ($lower !== 'tidak ada' && $lower !== '-' && $lower !== 'none' && $lower !== 'tidak' && $lower !== 'tdk ada') {
+                    // Hapus data alergi lama untuk pasien ini agar sinkron
+                    DB::table('alergi_obat')->where('id_pasien', $idPasien)->delete();
+
+                    // Dukung pemisahan jika ada beberapa obat yang dipisahkan koma
+                    $obatList = array_map('trim', explode(',', $alergiInput));
+                    foreach ($obatList as $obat) {
+                        if (!empty($obat)) {
+                            DB::table('alergi_obat')->insert([
+                                'id_pasien' => $idPasien,
+                                'nama_obat' => $obat,
+                                'keterangan' => 'Dicatat saat pendaftaran',
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                } else {
+                    DB::table('alergi_obat')->where('id_pasien', $idPasien)->delete();
+                }
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Buat nomor antrean
             |--------------------------------------------------------------------------
             */
 
@@ -92,7 +126,7 @@ class PendaftaranController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 4. Simpan data pendaftaran
+            | 5. Simpan data pendaftaran
             |--------------------------------------------------------------------------
             */
 
@@ -109,7 +143,7 @@ class PendaftaranController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 5. Kirim response ke JavaScript
+            | 6. Kirim response ke JavaScript
             |--------------------------------------------------------------------------
             */
 

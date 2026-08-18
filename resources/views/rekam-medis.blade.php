@@ -118,10 +118,21 @@
                         </span>
                     </div>
 
-                    <div class="flex justify-between border-b border-outline-variant/60 pb-2">
-                        <span class="text-on-surface-variant">Alergi Obat</span>
-                        <span id="selectedAllergy" class="font-semibold text-on-surface">
-                            {{ $alergiText }}
+                    <!-- Alergi Obat (Prominent Badge) -->
+                    <div class="flex justify-between items-center border-b border-outline-variant/60 pb-2">
+                        <span class="text-on-surface-variant font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px] text-amber-600">medication</span>
+                            Alergi Obat
+                        </span>
+                        <span id="selectedAllergy">
+                            @if($alergiText && $alergiText !== 'Tidak Ada')
+                                <span class="bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">warning</span>
+                                    {{ $alergiText }}
+                                </span>
+                            @else
+                                <span class="text-on-surface font-semibold text-xs">Tidak Ada</span>
+                            @endif
                         </span>
                     </div>
 
@@ -382,7 +393,20 @@ function selectPasienRM(id) {
         document.getElementById('selectedRM').textContent = p.no_rm;
         document.getElementById('selectedNik').textContent = p.nik;
         document.getElementById('selectedBlood').innerHTML = '<span class="material-symbols-outlined text-[15px]">bloodtype</span> <span>' + p.golongan_darah + '</span>';
-        document.getElementById('selectedAllergy').textContent = p.alergi;
+        
+        // Alergi Obat Display
+        const allergyContainer = document.getElementById('selectedAllergy');
+        if (p.alergi && p.alergi !== 'Tidak Ada') {
+            allergyContainer.innerHTML = `
+                <span class="bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded text-xs font-bold inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">warning</span>
+                    ${p.alergi}
+                </span>
+            `;
+        } else {
+            allergyContainer.innerHTML = '<span class="text-on-surface font-semibold text-xs">Tidak Ada</span>';
+        }
+
         document.getElementById('selectedLastVisit').textContent = p.last_visit;
         document.getElementById('headerPatientName').textContent = p.nama_lengkap;
 
@@ -428,6 +452,10 @@ function selectPasienRM(id) {
                 ? `<ul class="list-disc list-inside mt-0.5 space-y-0.5 text-on-surface">${item.rencana_tindakan.map(pl => `<li>${pl}</li>`).join('')}</ul>`
                 : `<p class="text-on-surface mt-0.5">Observasi dan tindakan keperawatan berkala.</p>`;
 
+            const allergyWarningHtml = (p.alergi && p.alergi !== 'Tidak Ada') 
+                ? `<div class="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs font-semibold text-red-700"><span class="material-symbols-outlined text-[16px]">warning</span> Peringatan Alergi: <span class="font-bold underline">${p.alergi}</span></div>` 
+                : '';
+
             html += `
                 <div class="relative pl-10 sm:pl-12 group visit-entry">
                     <div class="absolute left-[16px] sm:left-[24px] top-1 w-8 h-8 rounded-full bg-[#E5F5F0] text-primary flex items-center justify-center border-4 border-white shadow-sm z-10 font-bold">
@@ -436,6 +464,8 @@ function selectPasienRM(id) {
 
                     <div class="bg-surface border border-outline-variant/80 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden">
                         <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+
+                        ${allergyWarningHtml}
 
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 border-b border-outline-variant/50 pb-3">
                             <div>

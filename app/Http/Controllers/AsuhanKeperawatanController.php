@@ -93,6 +93,10 @@ class AsuhanKeperawatanController extends Controller
         $latestIntervensi = $latestRekam ? $latestRekam->intervensi : [];
         $latestPendaftaran = $pasien->pendaftaranTerbaru;
 
+        $alergiText = $pasien->alergis->isNotEmpty() 
+            ? $pasien->alergis->pluck('nama_obat')->join(', ') 
+            : 'Tidak Ada';
+
         return response()->json([
             'success' => true,
             'pasien' => [
@@ -105,6 +109,7 @@ class AsuhanKeperawatanController extends Controller
                 'age' => $pasien->age,
                 'formatted_jk' => $pasien->formatted_jk,
                 'golongan_darah' => $pasien->golongan_darah ?: '-',
+                'alergi' => $alergiText,
                 'alamat' => $pasien->alamat ?: '-',
                 'no_telp' => $pasien->no_telp ?: '-',
                 'tgl_kunjungan' => $latestPendaftaran ? Carbon::parse($latestPendaftaran->tgl_daftar)->translatedFormat('d M Y') : Carbon::now()->translatedFormat('d M Y'),

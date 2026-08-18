@@ -205,11 +205,11 @@
                     </a>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
                     <div class="bg-surface p-3.5 rounded-xl border border-outline-variant/60">
                         <p class="text-xs text-on-surface-variant mb-1 font-medium flex items-center gap-1">
                             <span class="material-symbols-outlined text-[15px]">cake</span>
-                            Tanggal Lahir (Usia)
+                            Tanggal Lahir
                         </p>
                         <p id="infoTglLahir" class="text-sm font-semibold text-on-surface">
                             {{ $selectedPasien ? $selectedPasien->formatted_tgl_lahir . ' (' . $selectedPasien->age . ')' : '-' }}
@@ -238,8 +238,18 @@
 
                     <div class="bg-surface p-3.5 rounded-xl border border-outline-variant/60">
                         <p class="text-xs text-on-surface-variant mb-1 font-medium flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px] text-amber-600">medication</span>
+                            Alergi Obat
+                        </p>
+                        <p id="infoAlergi" class="text-sm font-bold text-amber-700">
+                            {{ ($selectedPasien && $selectedPasien->alergis->isNotEmpty()) ? $selectedPasien->alergis->pluck('nama_obat')->join(', ') : 'Tidak Ada' }}
+                        </p>
+                    </div>
+
+                    <div class="col-span-2 md:col-span-1 bg-surface p-3.5 rounded-xl border border-outline-variant/60">
+                        <p class="text-xs text-on-surface-variant mb-1 font-medium flex items-center gap-1">
                             <span class="material-symbols-outlined text-[15px]">calendar_today</span>
-                            Tanggal Kunjungan
+                            Tgl Kunjungan
                         </p>
                         <p id="infoTglKunjungan" class="text-sm font-semibold text-on-surface">
                             @if($selectedPasien && $selectedPasien->pendaftaranTerbaru)
@@ -775,6 +785,10 @@ function selectPasienById(id) {
         document.getElementById('infoTglLahir').textContent = `${p.formatted_tgl_lahir} (${p.age})`;
         document.getElementById('infoJk').textContent = p.formatted_jk;
         document.getElementById('infoGolDarah').textContent = p.golongan_darah || '-';
+        const infoAlergi = document.getElementById('infoAlergi');
+        if (infoAlergi) {
+            infoAlergi.textContent = p.alergi || 'Tidak Ada';
+        }
         document.getElementById('infoTglKunjungan').textContent = p.tgl_kunjungan;
 
         // 3. Update Rekam Medis Links
