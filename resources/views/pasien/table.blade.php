@@ -4,17 +4,7 @@
             {{ sprintf('%02d', ($pasiens->firstItem() ?? 1) + $index) }}
         </td>
         <td class="py-3.5 px-4 sm:px-6 text-sm font-semibold whitespace-nowrap">
-            <div class="flex items-center gap-2">
-                <span class="text-on-surface">{{ $pasien->nama_lengkap }}</span>
-                <button 
-                    type="button"
-                    onclick="confirmDeletePasien('{{ $pasien->id_pasien }}', '{{ addslashes($pasien->nama_lengkap) }}')"
-                    class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1 rounded-lg transition-colors flex items-center justify-center shrink-0"
-                    title="Hapus {{ $pasien->nama_lengkap }}"
-                >
-                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                </button>
-            </div>
+            <span class="text-on-surface">{{ $pasien->nama_lengkap }}</span>
         </td>
         <td class="py-3.5 px-4 sm:px-6 text-sm whitespace-nowrap">
             {{ $pasien->nik }}
