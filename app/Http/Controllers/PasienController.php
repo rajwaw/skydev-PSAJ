@@ -83,7 +83,7 @@ class PasienController extends Controller
     }
 
     /**
-     * Menghapus data pasien dan riwayat pendaftarannya dari database.
+     * Menghapus data pasien dan riwayat pendaftaran serta rekam medisnya dari database.
      */
     public function destroy($id)
     {
@@ -101,23 +101,54 @@ class PasienController extends Controller
 
         $nama = $pasien->nama_lengkap;
 
-        // Gunakan database transaction untuk menghapus pendaftaran & pasien
-        DB::transaction(function () use ($id) {
-            DB::table('pendaftaran')->where('id_pasien', $id)->delete();
-            Pasien::where('id_pasien', $id)->delete();
-        });
+        try {
+            // Gunakan database transaction untuk menghapus seluruh relasi data pasien
+            DB::transaction(function () use ($id) {
+                $pendaftaranIds = DB::table('pendaftaran')->where('id_pasien', $id)->pluck('id_pendaftaran');
+                $rekamMedisIds = DB::table('rekam_medis')
+                    ->where('id_pasien', $id)
+                    ->orWhereIn('id_pendaftaran', $pendaftaranIds)
+                    ->pluck('id_rekam_medis');
 
-        // Hitung ulang total pasien setelah penghapusan
-        $totalPasien = Pasien::count();
+                if ($rekamMedisIds->isNotEmpty()) {
+                    DB::table('asuhan_medis')->whereIn('id_rekam_medis', $rekamMedisIds)->delete();
+                    DB::table('intervensi')->whereIn('id_rekam_medis', $rekamMedisIds)->delete();
+                    DB::table('implementasi')->whereIn('id_rekam_medis', $rekamMedisIds)->delete();
+                    DB::table('evaluasi')->whereIn('id_rekam_medis', $rekamMedisIds)->delete();
+                    DB::table('rekam_medis')->whereIn('id_rekam_medis', $rekamMedisIds)->delete();
+                }
 
-        if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
-            return response()->json([
-                'success' => true,
-                'message' => "Data pasien {$nama} berhasil dihapus dari sistem.",
-                'total' => $totalPasien
-            ]);
+                if ($pendaftaranIds->isNotEmpty()) {
+                    DB::table('pembayaran')->whereIn('id_pendaftaran', $pendaftaranIds)->delete();
+                    DB::table('pendaftaran')->whereIn('id_pendaftaran', $pendaftaranIds)->delete();
+                }
+
+                DB::table('alergi_obat')->where('id_pasien', $id)->delete();
+                Pasien::where('id_pasien', $id)->delete();
+            });
+
+            // Hitung ulang total pasien setelah penghapusan
+            $totalPasien = Pasien::count();
+
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Data pasien {$nama} berhasil dihapus dari sistem.",
+                    'total' => $totalPasien
+                ]);
+            }
+
+            return redirect()->route('pasien')->with('success', "Data pasien {$nama} berhasil dihapus dari sistem.");
+
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Gagal menghapus data pasien: " . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->route('pasien')->with('error', "Gagal menghapus data pasien: " . $e->getMessage());
         }
-
-        return redirect()->route('pasien')->with('success', "Data pasien {$nama} berhasil dihapus dari sistem.");
     }
 }
