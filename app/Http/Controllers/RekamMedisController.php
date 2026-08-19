@@ -145,6 +145,18 @@ class RekamMedisController extends Controller
                     ? $intervensiList->first()->diagnosa_awal 
                     : ($asuhan ? $asuhan->keluhan_utama : '-'),
                 'rencana_tindakan' => $intervensiList->pluck('rencana_tindakan')->filter()->values()->all(),
+                'implementasi' => $implementasi ? [
+                    'tindakan_dilakukan' => $implementasi->tindakan_dilakukan,
+                    'resep_obat' => $implementasi->resep_obat ?: '-',
+                ] : null,
+                'evaluasi' => $evaluasi ? [
+                    'status_kondisi' => $evaluasi->status_kondisi,
+                    'status_evaluasi' => $evaluasi->status_evaluasi,
+                    'keluhan_setelah_tindakan' => $evaluasi->keluhan_setelah_tindakan ?: '-',
+                    'respon_pasien' => $evaluasi->respon_pasien ?: '-',
+                    'hasil_evaluasi' => $evaluasi->hasil_evaluasi ?: '-',
+                    'rencana_selanjutnya' => $evaluasi->rencana_selanjutnya ?: '-',
+                ] : null,
                 'soap' => [
                     'assessment' => $intervensiList->isNotEmpty() && $intervensiList->first()->diagnosa_awal 
                         ? $intervensiList->first()->diagnosa_awal 

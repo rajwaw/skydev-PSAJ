@@ -7,6 +7,8 @@ use App\Http\Controllers\PasienController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AsuhanKeperawatanController;
 use App\Http\Controllers\RekamMedisController;
+use App\Http\Controllers\EvaluasiController;
+use App\Http\Controllers\ImplementasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -160,11 +162,29 @@ Route::get('/asuhan-keperawatan/pasien/{id}', [AsuhanKeperawatanController::clas
 |--------------------------------------------------------------------------
 */
 
-Route::get('/evaluasi', function () {
+Route::get('/evaluasi', [EvaluasiController::class, 'index'])
+    ->middleware('auth')
+    ->name('evaluasi');
 
-    return view('evaluasi');
+Route::post('/evaluasi', [EvaluasiController::class, 'store'])
+    ->middleware('auth')
+    ->name('evaluasi.store');
 
-})->middleware('auth')->name('evaluasi');
+Route::get('/evaluasi/pasien/{id}', [EvaluasiController::class, 'getPasienDetail'])
+    ->middleware('auth')
+    ->name('evaluasi.pasien.detail');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| IMPLEMENTASI
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/implementasi', [ImplementasiController::class, 'store'])
+    ->middleware('auth')
+    ->name('implementasi.store');
 
 
 
