@@ -21,9 +21,18 @@ class AsuhanKeperawatanController extends Controller
         $selectedId = $request->query('pasien_id') ?: $request->query('id');
         $search = $request->query('search');
 
-        // Ambil daftar pasien untuk pencarian & dropdown
-        $pasienQuery = Pasien::with(['pendaftaranTerbaru', 'rekamMedisTerbaru.asuhanMedis'])
-            ->orderByDesc('id_pasien');
+        // Ambil daftar pasien untuk pencarian & dropdown - Urutkan dari pasien yang paling baru mendaftar
+        $pasienQuery = Pasien::with(['pendaftaranTerbaru', 'rekamMedisTerbaru.asuhanMedis', 'alergis'])
+            ->select('pasien.*')
+            ->selectSub(function ($q) {
+                $q->select('id_pendaftaran')
+                    ->from('pendaftaran')
+                    ->whereColumn('pendaftaran.id_pasien', 'pasien.id_pasien')
+                    ->orderByDesc('id_pendaftaran')
+                    ->limit(1);
+            }, 'latest_pendaftaran_id')
+            ->orderByDesc('latest_pendaftaran_id')
+            ->orderByDesc('pasien.id_pasien');
 
         if ($search) {
             $pasienQuery->where(function ($q) use ($search) {
@@ -35,18 +44,12 @@ class AsuhanKeperawatanController extends Controller
 
         $daftarPasien = $pasienQuery->get();
 
-        // Tentukan pasien yang terpilih
+        // Tentukan pasien yang terpilih (hanya jika ada ID yang diminta secara spesifik)
         $selectedPasien = null;
         if ($selectedId) {
             $selectedPasien = Pasien::with(['pendaftaranTerbaru', 'rekamMedis' => function ($q) {
                 $q->with(['asuhanMedis', 'intervensi'])->orderByDesc('tgl_pemeriksaan');
             }, 'alergis'])->find($selectedId);
-        }
-
-        if (!$selectedPasien && $daftarPasien->isNotEmpty()) {
-            $selectedPasien = Pasien::with(['pendaftaranTerbaru', 'rekamMedis' => function ($q) {
-                $q->with(['asuhanMedis', 'intervensi'])->orderByDesc('tgl_pemeriksaan');
-            }, 'alergis'])->find($daftarPasien->first()->id_pasien);
         }
 
         // Ambil data rekam medis terakhir jika ada

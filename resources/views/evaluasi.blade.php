@@ -55,9 +55,9 @@
                     <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
                     <input id="pasienSearchInput" type="text" placeholder="Ketik nama pasien, NIK, atau nomor telepon..."
                         value="{{ $selectedPasien ? $selectedPasien->nama_lengkap : '' }}"
-                        autocomplete="off" onfocus="showDropdown()" oninput="filterDropdown(this.value)"
+                        autocomplete="off" onclick="showDropdown(event)" onfocus="showDropdown(event)" oninput="filterDropdown(this.value)"
                         class="w-full bg-surface border border-outline-variant rounded-xl py-3 pl-11 pr-10 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
-                    <button type="button" onclick="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1 rounded-lg">
+                    <button type="button" onclick="clearSearch(event)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1 rounded-lg">
                         <span class="material-symbols-outlined text-sm">close</span>
                     </button>
                     <div id="pasienDropdownList" class="absolute left-0 right-0 top-full mt-1.5 bg-white border border-outline-variant rounded-xl shadow-xl z-30 max-h-64 overflow-y-auto hidden">
@@ -101,9 +101,9 @@
                             </p>
                         </div>
                     </div>
-                    <button type="button" onclick="showDropdown()" class="bg-white border border-outline-variant hover:border-primary text-on-surface text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
+                    <button type="button" id="btnPilihPasienEval" onclick="toggleDropdownEval(event)" class="bg-white border border-outline-variant hover:border-primary text-on-surface text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
                         <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-                        Ganti Pasien
+                        <span>Pilih / Ganti Pasien</span>
                     </button>
                 </div>
             </section>
@@ -245,7 +245,7 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-xs text-on-surface-variant">Status</span>
-                        <span id="infoBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                        <span id="infoBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? 'bg-amber-100 text-amber-800' : 'bg-surface-container text-on-surface-variant' }}">
                             {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? $selectedPasien->pendaftaranTerbaru->status_kunjungan : '-' }}
                         </span>
                     </div>
@@ -303,18 +303,43 @@
 const ROUTE_EVAL_PASIEN = '{{ route("evaluasi.pasien.detail", ["id" => "__ID__"]) }}';
 const ROUTE_RM_PASIEN   = '{{ route("rekam-medis", ["id" => "__ID__"]) }}';
 
-function showDropdown() {
-    document.getElementById('pasienDropdownList').classList.remove('hidden');
-    setTimeout(() => document.addEventListener('click', closeDropdownOutside), 50);
+function showDropdown(event) {
+    if (event) event.stopPropagation();
+    const list = document.getElementById('pasienDropdownList');
+    if (list) list.classList.remove('hidden');
 }
-function closeDropdownOutside(e) {
-    const d = document.getElementById('pasienDropdownList');
-    const i = document.getElementById('pasienSearchInput');
-    if (!d.contains(e.target) && e.target !== i) {
-        d.classList.add('hidden');
-        document.removeEventListener('click', closeDropdownOutside);
+
+function toggleDropdownEval(event) {
+    if (event) event.stopPropagation();
+    const list = document.getElementById('pasienDropdownList');
+    const input = document.getElementById('pasienSearchInput');
+    if (list) {
+        if (list.classList.contains('hidden')) {
+            list.classList.remove('hidden');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        } else {
+            list.classList.add('hidden');
+        }
     }
 }
+
+document.addEventListener('click', function(e) {
+    const input = document.getElementById('pasienSearchInput');
+    const dropdown = document.getElementById('pasienDropdownList');
+    const btn = document.getElementById('btnPilihPasienEval');
+    if (dropdown && !dropdown.classList.contains('hidden')) {
+        const isInsideInput = input && input.contains(e.target);
+        const isInsideDropdown = dropdown.contains(e.target);
+        const isInsideBtn = btn && btn.contains(e.target);
+        if (!isInsideInput && !isInsideDropdown && !isInsideBtn) {
+            dropdown.classList.add('hidden');
+        }
+    }
+});
+
 function filterDropdown(val) {
     const q = val.toLowerCase();
     showDropdown();
@@ -323,7 +348,16 @@ function filterDropdown(val) {
         item.style.display = ok ? '' : 'none';
     });
 }
-function clearSearch() { document.getElementById('pasienSearchInput').value = ''; filterDropdown(''); }
+function clearSearch(event) {
+    if (event) event.stopPropagation();
+    const input = document.getElementById('pasienSearchInput');
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+    filterDropdown('');
+    showDropdown();
+}
 
 function selectPasien(id) {
     document.getElementById('pasienDropdownList').classList.add('hidden');

@@ -312,24 +312,35 @@
                                 </div>
                             @endforeach
                         </div>
-                    @else
+                    @elseif($selectedPasien)
                         <!-- Empty State If Patient Has No Medical Records Yet -->
                         <div class="text-center py-12 px-4" id="emptyStateContainer">
                             <div class="w-16 h-16 rounded-full bg-[#E5F5F0] text-primary flex items-center justify-center mx-auto mb-4">
                                 <span class="material-symbols-outlined text-3xl">clinical_notes</span>
                             </div>
                             <h4 class="text-base font-bold text-on-surface mb-1">
-                                Belum Ada Rekam Medis untuk <span id="emptyStatePasienName">{{ $selectedPasien ? $selectedPasien->nama_lengkap : 'Pasien Ini' }}</span>
+                                Belum Ada Rekam Medis untuk <span id="emptyStatePasienName">{{ $selectedPasien->nama_lengkap }}</span>
                             </h4>
                             <p class="text-xs sm:text-sm text-on-surface-variant max-w-md mx-auto mb-5">
                                 Pasien ini sudah terdaftar di database. Anda dapat langsung mengisi form pengkajian dan rencana asuhan keperawatan sekarang.
                             </p>
-                            @if($selectedPasien)
-                                <a id="emptyStateBtnAsuhan" href="{{ route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) }}" class="bg-primary text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl hover:bg-[#005a3c] transition-colors inline-flex items-center gap-2 shadow-sm">
-                                    <span class="material-symbols-outlined text-base">add</span>
-                                    <span>Buat Asuhan Keperawatan Baru</span>
-                                </a>
-                            @endif
+                            <a id="emptyStateBtnAsuhan" href="{{ route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) }}" class="bg-primary text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl hover:bg-[#005a3c] transition-colors inline-flex items-center gap-2 shadow-sm">
+                                <span class="material-symbols-outlined text-base">add</span>
+                                <span>Buat Asuhan Keperawatan Baru</span>
+                            </a>
+                        </div>
+                    @else
+                        <!-- Initial Prompt State When No Patient Selected Yet -->
+                        <div class="text-center py-16 px-4" id="emptyStateContainer">
+                            <div class="w-16 h-16 rounded-full bg-[#E5F5F0] text-primary flex items-center justify-center mx-auto mb-4">
+                                <span class="material-symbols-outlined text-3xl">touch_app</span>
+                            </div>
+                            <h4 class="text-base font-bold text-on-surface mb-1">
+                                Pilih Pasien Terlebih Dahulu
+                            </h4>
+                            <p class="text-xs sm:text-sm text-on-surface-variant max-w-md mx-auto">
+                                Silakan pilih salah satu pasien dari daftar di sebelah kiri untuk melihat rekam medis, profil, dan riwayat pemeriksaan.
+                            </p>
                         </div>
                     @endif
 

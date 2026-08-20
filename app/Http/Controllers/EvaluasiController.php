@@ -19,9 +19,18 @@ class EvaluasiController extends Controller
         $selectedId = $request->query('pasien_id') ?: $request->query('id');
         $search = $request->query('search');
 
-        // Ambil daftar pasien untuk dropdown / pencarian
-        $pasienQuery = Pasien::with(['pendaftaranTerbaru', 'rekamMedisTerbaru'])
-            ->orderByDesc('id_pasien');
+        // Ambil daftar pasien untuk dropdown / pencarian - Urutkan dari pasien yang paling baru mendaftar
+        $pasienQuery = Pasien::with(['pendaftaranTerbaru', 'rekamMedisTerbaru', 'alergis'])
+            ->select('pasien.*')
+            ->selectSub(function ($q) {
+                $q->select('id_pendaftaran')
+                    ->from('pendaftaran')
+                    ->whereColumn('pendaftaran.id_pasien', 'pasien.id_pasien')
+                    ->orderByDesc('id_pendaftaran')
+                    ->limit(1);
+            }, 'latest_pendaftaran_id')
+            ->orderByDesc('latest_pendaftaran_id')
+            ->orderByDesc('pasien.id_pasien');
 
         if ($search) {
             $pasienQuery->where(function ($q) use ($search) {
@@ -33,7 +42,7 @@ class EvaluasiController extends Controller
 
         $daftarPasien = $pasienQuery->get();
 
-        // Tentukan pasien yang sedang terpilih
+        // Tentukan pasien yang sedang terpilih (hanya jika ada ID yang diminta secara spesifik)
         $selectedPasien = null;
         if ($selectedId) {
             $selectedPasien = Pasien::with([
@@ -44,17 +53,6 @@ class EvaluasiController extends Controller
                 },
                 'alergis',
             ])->find($selectedId);
-        }
-
-        if (!$selectedPasien && $daftarPasien->isNotEmpty()) {
-            $selectedPasien = Pasien::with([
-                'pendaftaranTerbaru',
-                'rekamMedis' => function ($q) {
-                    $q->with(['asuhanMedis', 'intervensi', 'implementasi', 'evaluasi'])
-                      ->orderByDesc('tgl_pemeriksaan');
-                },
-                'alergis',
-            ])->find($daftarPasien->first()->id_pasien);
         }
 
         // Data rekam medis & evaluasi terakhir pasien terpilih

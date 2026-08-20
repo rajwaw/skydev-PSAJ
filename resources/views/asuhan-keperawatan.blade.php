@@ -112,11 +112,12 @@
                         placeholder="Ketik nama pasien, NIK, atau nomor telepon..."
                         value="{{ $selectedPasien ? $selectedPasien->nama_lengkap : '' }}"
                         autocomplete="off"
-                        onfocus="showPasienDropdown()"
+                        onclick="showPasienDropdown(event)"
+                        onfocus="showPasienDropdown(event)"
                         oninput="filterPasienDropdown(this.value)"
                         class="w-full bg-surface border border-outline-variant rounded-xl py-3 pl-11 pr-10 text-sm text-on-surface input-ring placeholder-on-surface-variant/60"
                     >
-                    <button type="button" onclick="clearSearchPasien()" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1 rounded-lg">
+                    <button type="button" onclick="clearSearchPasien(event)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1 rounded-lg">
                         <span class="material-symbols-outlined text-sm">close</span>
                     </button>
 
@@ -161,7 +162,7 @@
                                 <h4 id="cardNama" class="font-bold text-on-surface text-base">
                                     {{ $selectedPasien ? $selectedPasien->nama_lengkap : 'Belum Memilih Pasien' }}
                                 </h4>
-                                <span class="bg-[#E5F5F0] text-primary text-[11px] font-bold px-2 py-0.5 rounded-md">
+                                <span class="bg-[#E5F5F0] text-primary text-[11px] font-bold px-2 py-0.5 rounded-md {{ $selectedPasien ? '' : 'hidden' }}" id="badgeTerpilih">
                                     Terpilih
                                 </span>
                             </div>
@@ -178,10 +179,11 @@
                     <div class="flex items-center gap-2 sm:self-center">
                         <button
                             type="button"
-                            onclick="showPasienDropdown()"
+                            id="btnPilihPasien"
+                            onclick="toggleOrFocusDropdown(event)"
                             class="bg-white border border-outline-variant hover:border-primary text-on-surface text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm">
                             <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
-                            Ganti Pasien
+                            <span>Pilih / Ganti Pasien</span>
                         </button>
                     </div>
                 </div>
@@ -603,9 +605,9 @@
 
                         <div>
                             <p class="text-xs text-on-surface-variant font-medium">Status Dokumen</p>
-                            <div id="summaryStatusBadge" class="inline-flex items-center gap-1.5 bg-[#E5F5F0] px-2.5 py-1 rounded-lg text-primary text-xs font-bold mt-1">
-                                <span class="material-symbols-outlined text-[14px]">check_circle</span>
-                                Siap Disimpan
+                            <div id="summaryStatusBadge" class="inline-flex items-center gap-1.5 {{ $selectedPasien ? 'bg-[#E5F5F0] text-primary' : 'bg-amber-50 text-amber-700 border border-amber-200' }} px-2.5 py-1 rounded-lg text-xs font-bold mt-1">
+                                <span id="summaryStatusIcon" class="material-symbols-outlined text-[14px]">{{ $selectedPasien ? 'check_circle' : 'info' }}</span>
+                                <span id="summaryStatusText">{{ $selectedPasien ? 'Siap Disimpan' : 'Pilih Pasien Dulu' }}</span>
                             </div>
                         </div>
 
@@ -709,9 +711,27 @@ function hideToastNotification() {
 }
 
 // Dropdown Pencarian Pasien
-function showPasienDropdown() {
+function showPasienDropdown(event) {
+    if (event) event.stopPropagation();
     const list = document.getElementById('pasienDropdownList');
     if (list) list.classList.remove('hidden');
+}
+
+function toggleOrFocusDropdown(event) {
+    if (event) event.stopPropagation();
+    const list = document.getElementById('pasienDropdownList');
+    const input = document.getElementById('pasienSearchInput');
+    if (list) {
+        if (list.classList.contains('hidden')) {
+            list.classList.remove('hidden');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        } else {
+            list.classList.add('hidden');
+        }
+    }
 }
 
 function hidePasienDropdown() {
@@ -719,19 +739,27 @@ function hidePasienDropdown() {
     if (list) list.classList.add('hidden');
 }
 
-function clearSearchPasien() {
+function clearSearchPasien(event) {
+    if (event) event.stopPropagation();
     const input = document.getElementById('pasienSearchInput');
-    if (input) input.value = '';
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
     filterPasienDropdown('');
     showPasienDropdown();
 }
 
 function filterPasienDropdown(keyword) {
     const term = keyword.toLowerCase().trim();
+    showPasienDropdown();
     const items = document.querySelectorAll('.pasien-dropdown-item');
     items.forEach(item => {
         const text = item.textContent.toLowerCase();
-        if (text.includes(term)) {
+        const nama = (item.getAttribute('data-nama') || '').toLowerCase();
+        const nik = (item.getAttribute('data-nik') || '').toLowerCase();
+        const rm = (item.getAttribute('data-rm') || '').toLowerCase();
+        if (text.includes(term) || nama.includes(term) || nik.includes(term) || rm.includes(term)) {
             item.style.display = 'flex';
         } else {
             item.style.display = 'none';
@@ -741,10 +769,18 @@ function filterPasienDropdown(keyword) {
 
 // Menutup dropdown saat klik di luar
 document.addEventListener('click', function(e) {
-    const searchContainer = document.getElementById('pasienSearchInput');
+    const input = document.getElementById('pasienSearchInput');
     const dropdown = document.getElementById('pasienDropdownList');
-    if (searchContainer && dropdown && !searchContainer.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.add('hidden');
+    const btn = document.getElementById('btnPilihPasien');
+    
+    if (dropdown && !dropdown.classList.contains('hidden')) {
+        const isClickInsideInput = input && input.contains(e.target);
+        const isClickInsideDropdown = dropdown.contains(e.target);
+        const isClickInsideBtn = btn && btn.contains(e.target);
+        
+        if (!isClickInsideInput && !isClickInsideDropdown && !isClickInsideBtn) {
+            dropdown.classList.add('hidden');
+        }
     }
 });
 
@@ -800,9 +836,16 @@ function selectPasienById(id) {
         if (cardLink) cardLink.href = rmUrl;
         if (sideLink) sideLink.href = rmUrl;
 
-        // 4. Update Summary
+        // 4. Update Summary & Badges
         document.getElementById('summaryPasienName').textContent = p.nama_lengkap;
         document.getElementById('summaryNoRM').textContent = p.no_rm;
+        const badgeTerpilih = document.getElementById('badgeTerpilih');
+        if (badgeTerpilih) badgeTerpilih.classList.remove('hidden');
+        const statusBadge = document.getElementById('summaryStatusBadge');
+        if (statusBadge) {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-[#E5F5F0] text-primary px-2.5 py-1 rounded-lg text-xs font-bold mt-1";
+            statusBadge.innerHTML = '<span class="material-symbols-outlined text-[14px]">check_circle</span> <span>Siap Disimpan</span>';
+        }
 
         // 5. Prefill Form with existing Assessment if available, or clear
         if (asuhan) {

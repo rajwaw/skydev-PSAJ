@@ -17,9 +17,18 @@ class RekamMedisController extends Controller
         $selectedId = $request->query('pasien_id') ?: $request->query('id');
         $search = $request->query('search');
 
-        // Query seluruh pasien
-        $pasienQuery = Pasien::with(['pendaftaranTerbaru', 'rekamMedisTerbaru', 'alergis'])
-            ->orderByDesc('id_pasien');
+        // Query seluruh pasien - Urutkan dari pasien yang paling baru mendaftar di urutan paling atas
+        $pasienQuery = Pasien::with(['pendaftarans', 'rekamMedisTerbaru', 'alergis'])
+            ->select('pasien.*')
+            ->selectSub(function ($q) {
+                $q->select('id_pendaftaran')
+                    ->from('pendaftaran')
+                    ->whereColumn('pendaftaran.id_pasien', 'pasien.id_pasien')
+                    ->orderByDesc('id_pendaftaran')
+                    ->limit(1);
+            }, 'latest_pendaftaran_id')
+            ->orderByDesc('latest_pendaftaran_id')
+            ->orderByDesc('pasien.id_pasien');
 
         if ($search) {
             $pasienQuery->where(function ($q) use ($search) {
@@ -31,7 +40,7 @@ class RekamMedisController extends Controller
 
         $daftarPasien = $pasienQuery->get();
 
-        // Tentukan pasien yang sedang dipilih
+        // Tentukan pasien yang sedang dipilih (hanya jika ada ID yang diminta secara eksplisit)
         $selectedPasien = null;
         if ($selectedId) {
             $selectedPasien = Pasien::with([
@@ -44,19 +53,6 @@ class RekamMedisController extends Controller
                 },
                 'alergis'
             ])->find($selectedId);
-        }
-
-        if (!$selectedPasien && $daftarPasien->isNotEmpty()) {
-            $selectedPasien = Pasien::with([
-                'pendaftarans' => function ($q) {
-                    $q->orderByDesc('tgl_daftar');
-                },
-                'rekamMedis' => function ($q) {
-                    $q->with(['asuhanMedis', 'intervensi', 'implementasi', 'evaluasi', 'pendaftaran'])
-                      ->orderByDesc('tgl_pemeriksaan');
-                },
-                'alergis'
-            ])->find($daftarPasien->first()->id_pasien);
         }
 
         // Format alergi obat
