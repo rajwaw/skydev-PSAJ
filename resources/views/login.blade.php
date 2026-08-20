@@ -461,7 +461,7 @@
                                font-semibold
                                mb-2"
                     >
-                        Email
+                        Email <span class="text-red-500">*</span>
                     </label>
 
 
@@ -522,7 +522,7 @@
                                font-semibold
                                mb-2"
                     >
-                        Password
+                        Password <span class="text-red-500">*</span>
                     </label>
 
 

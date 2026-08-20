@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('pasien', function (Blueprint $table) {
             $table->id('id_pasien');
-            $table->string('nik', 20);
+            $table->string('nik', 20)->unique();
             $table->string('nama_lengkap', 100);
             $table->date('tgl_lahir');
             $table->string('jk', 10);

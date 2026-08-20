@@ -157,7 +157,7 @@
             </h3>
 
             <p class="text-sm text-on-surface-variant mt-1">
-                Masukkan identitas pasien untuk membuat kunjungan baru.
+                Masukkan identitas pasien untuk membuat kunjungan baru. Kolom bertanda <span class="text-red-500 font-semibold">*</span> wajib diisi.
             </p>
 
         </div>
@@ -189,7 +189,7 @@
                             for="nik"
                             class="text-sm font-semibold text-on-surface block"
                         >
-                            NIK
+                            NIK <span class="text-red-500">*</span>
                         </label>
 
                         <input
@@ -213,7 +213,7 @@
                             for="nama"
                             class="text-sm font-semibold text-on-surface block"
                         >
-                            Nama Lengkap
+                            Nama Lengkap <span class="text-red-500">*</span>
                         </label>
 
                         <input
@@ -236,7 +236,7 @@
                             for="tanggal_lahir"
                             class="text-sm font-semibold text-on-surface block"
                         >
-                            Tanggal Lahir
+                            Tanggal Lahir <span class="text-red-500">*</span>
                         </label>
 
                         <input
@@ -258,7 +258,7 @@
                             for="jenis_kelamin"
                             class="text-sm font-semibold text-on-surface block"
                         >
-                            Jenis Kelamin
+                            Jenis Kelamin <span class="text-red-500">*</span>
                         </label>
 
                         <select

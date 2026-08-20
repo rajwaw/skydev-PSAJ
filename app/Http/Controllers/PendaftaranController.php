@@ -9,9 +9,9 @@ class PendaftaranController extends Controller
 {
     public function store(Request $request)
     {
-        // Validasi data dari form
+        // Validasi data dari form dengan aturan 1 NIK hanya untuk 1 pasien (unique:pasien,nik)
         $validated = $request->validate([
-            'nik' => 'required|string|max:20',
+            'nik' => 'required|string|max:20|unique:pasien,nik',
             'nama' => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|string|max:1',
@@ -19,6 +19,12 @@ class PendaftaranController extends Controller
             'telepon' => 'nullable|string|max:20',
             'golongan_darah' => 'nullable|in:A,B,AB,O',
             'alergi_obat' => 'nullable|string|max:255',
+        ], [
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.unique' => 'NIK sudah terdaftar dalam sistem. 1 NIK hanya berlaku untuk 1 pasien.',
+            'nama.required' => 'Nama lengkap wajib diisi.',
+            'tanggal_lahir.required' => 'Tanggal lahir wajib diisi.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
         ]);
 
         try {
@@ -27,55 +33,21 @@ class PendaftaranController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 1. Cek pasien berdasarkan NIK
+            | 1. Simpan Data Pasien Baru ke Database
             |--------------------------------------------------------------------------
             */
 
-            $pasien = DB::table('pasien')
-                ->where('nik', $request->nik)
-                ->first();
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | 2. Kalau pasien belum ada → buat pasien baru
-            |--------------------------------------------------------------------------
-            */
-
-            if (!$pasien) {
-
-                $idPasien = DB::table('pasien')->insertGetId([
-                    'nik' => $request->nik,
-                    'nama_lengkap' => $request->nama,
-                    'tgl_lahir' => $request->tanggal_lahir,
-                    'jk' => $request->jenis_kelamin,
-                    'alamat' => $request->alamat,
-                    'no_telp' => $request->telepon,
-                    'golongan_darah' => $request->golongan_darah,
-                ]);
-
-            } else {
-
-                /*
-                |--------------------------------------------------------------------------
-                | Kalau pasien sudah ada → gunakan pasien tersebut
-                |--------------------------------------------------------------------------
-                */
-
-                $idPasien = $pasien->id_pasien;
-
-                // Update data pasien
-                DB::table('pasien')
-                    ->where('id_pasien', $idPasien)
-                    ->update([
-                        'nama_lengkap' => $request->nama,
-                        'tgl_lahir' => $request->tanggal_lahir,
-                        'jk' => $request->jenis_kelamin,
-                        'alamat' => $request->alamat,
-                        'no_telp' => $request->telepon,
-                        'golongan_darah' => $request->golongan_darah,
-                    ]);
-            }
+            $idPasien = DB::table('pasien')->insertGetId([
+                'nik' => $request->nik,
+                'nama_lengkap' => $request->nama,
+                'tgl_lahir' => $request->tanggal_lahir,
+                'jk' => $request->jenis_kelamin,
+                'alamat' => $request->alamat,
+                'no_telp' => $request->telepon,
+                'golongan_darah' => $request->golongan_darah,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
 
             /*

@@ -168,7 +168,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block text-sm font-semibold text-on-surface mb-2">Kondisi Pasien</label>
+                            <label class="block text-sm font-semibold text-on-surface mb-2">Kondisi Pasien <span class="text-red-500">*</span></label>
                             <select id="evalKondisiSelect" name="status_kondisi" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
                                 <option value="Stabil" {{ ($latestEvaluasi && $latestEvaluasi->status_kondisi === 'Stabil') ? 'selected' : '' }}>Stabil</option>
                                 <option value="Membaik" {{ ($latestEvaluasi && $latestEvaluasi->status_kondisi === 'Membaik') ? 'selected' : '' }}>Membaik</option>
@@ -177,7 +177,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-on-surface mb-2">Status Evaluasi</label>
+                            <label class="block text-sm font-semibold text-on-surface mb-2">Status Evaluasi <span class="text-red-500">*</span></label>
                             <div class="flex flex-wrap items-center gap-4 mt-3">
                                 @foreach(['Belum Dievaluasi', 'Sedang Dievaluasi', 'Selesai'] as $statusEv)
                                     <label class="flex items-center gap-2 cursor-pointer">
