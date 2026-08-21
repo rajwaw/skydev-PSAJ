@@ -281,19 +281,6 @@
                 <span class="text-sm font-semibold">Pembayaran</span>
             </a>
 
-            <!-- PENGATURAN -->
-            <a
-                href="#"
-                class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
-                       {{ request()->routeIs('pengaturan*')
-                           ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
-                           : 'text-on-surface-variant hover:bg-surface-container-low' }}"
-            >
-                <span class="material-symbols-outlined {{ request()->routeIs('pengaturan*') ? 'filled-icon' : '' }}">
-                    settings
-                </span>
-                <span class="text-sm font-semibold">Pengaturan</span>
-            </a>
         </nav>
 
         <!-- ACCOUNT + LOGOUT -->
@@ -351,22 +338,6 @@
             </div>
 
             <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                <button
-                    type="button"
-                    class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
-                    aria-label="Notifikasi"
-                >
-                    <span class="material-symbols-outlined text-xl sm:text-2xl">notifications</span>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border border-white"></span>
-                </button>
-                <button
-                    type="button"
-                    class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors hidden sm:inline-flex"
-                    aria-label="Bantuan"
-                >
-                    <span class="material-symbols-outlined text-xl sm:text-2xl">help</span>
-                </button>
-                <div class="w-px h-6 bg-outline-variant mx-1 hidden sm:block"></div>
                 <div class="flex items-center gap-2 sm:gap-3 p-1 rounded-lg">
                     <span class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate">
                         {{ auth()->user()->name ?? 'Yudha Tama' }}
