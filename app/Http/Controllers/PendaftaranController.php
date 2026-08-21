@@ -11,12 +11,12 @@ class PendaftaranController extends Controller
     {
         // Validasi data dari form dengan aturan 1 NIK hanya untuk 1 pasien (unique:pasien,nik)
         $validated = $request->validate([
-            'nik' => 'required|string|max:20|unique:pasien,nik',
-            'nama' => 'required|string|max:100',
+            'nik' => 'required|digits:16|unique:pasien,nik',
+            'nama' => 'required|string|max:100|regex:/^[a-zA-Z\s]+$/',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|string|max:1',
             'alamat' => 'nullable|string',
-            'telepon' => 'nullable|string|max:20',
+            'telepon' => 'required|regex:/^[0-9]+$/|min:10|max:20',
             'golongan_darah' => 'nullable|in:A,B,AB,O',
             'alergi_obat' => 'nullable|string|max:255',
         ], [
@@ -25,6 +25,11 @@ class PendaftaranController extends Controller
             'nama.required' => 'Nama lengkap wajib diisi.',
             'tanggal_lahir.required' => 'Tanggal lahir wajib diisi.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'nik.digits' => 'NIK harus terdiri dari tepat 16 digit angka.',
+            'nama.regex' => 'Nama lengkap hanya boleh berisi huruf dan spasi.',
+            'telepon.required' => 'Nomor telepon wajib diisi.',
+            'telepon.regex' => 'Nomor telepon hanya boleh berisi angka.',
+            'telepon.min' => 'Nomor telepon minimal 10 digit.',
         ]);
 
         try {
