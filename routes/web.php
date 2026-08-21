@@ -9,6 +9,7 @@ use App\Http\Controllers\AsuhanKeperawatanController;
 use App\Http\Controllers\RekamMedisController;
 use App\Http\Controllers\EvaluasiController;
 use App\Http\Controllers\ImplementasiController;
+use App\Http\Controllers\PembayaranController;
 
 /*
 |--------------------------------------------------------------------------
@@ -185,6 +186,26 @@ Route::get('/evaluasi/pasien/{id}', [EvaluasiController::class, 'getPasienDetail
 Route::post('/implementasi', [ImplementasiController::class, 'store'])
     ->middleware('auth')
     ->name('implementasi.store');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| PEMBAYARAN
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/pembayaran', [PembayaranController::class, 'index'])
+    ->middleware('auth')
+    ->name('pembayaran');
+
+Route::post('/pembayaran', [PembayaranController::class, 'store'])
+    ->middleware('auth')
+    ->name('pembayaran.store');
+
+Route::get('/pembayaran/pasien/{id}', [PembayaranController::class, 'getPasienDetail'])
+    ->middleware('auth')
+    ->name('pembayaran.pasien.detail');
 
 
 

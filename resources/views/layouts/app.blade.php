@@ -269,7 +269,7 @@
 
             <!-- PEMBAYARAN -->
             <a
-                href="#"
+                href="{{ route('pembayaran') }}"
                 class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
                        {{ request()->routeIs('pembayaran*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
@@ -287,11 +287,11 @@
         <div class="pt-3 mt-2 border-t border-outline-variant">
             <div class="flex items-center gap-3 px-2 mb-2">
                 <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs shrink-0">
-                    {{ strtoupper(substr(auth()->user()->name ?? 'Yudha', 0, 2)) }}
+                    {{ strtoupper(substr(auth()->user()?->name ?? 'Yudha', 0, 2)) }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold truncate">
-                        {{ auth()->user()->name ?? 'Yudha Tama' }}
+                        {{ auth()->user()?->name ?? 'Yudha Tama' }}
                     </p>
                     <p class="text-xs text-on-surface-variant truncate">
                         Pemilik Klinik
@@ -329,7 +329,7 @@
                 </button>
                 <div class="flex flex-col min-w-0">
                     <h2 class="font-bold text-on-surface text-sm sm:text-base leading-tight truncate">
-                        @yield('header_title', 'Selamat datang, ' . (auth()->user()->name ? 'Bp. ' . auth()->user()->name : 'Bp. Yudha'))
+                        @yield('header_title', 'Selamat datang, ' . (auth()->user()?->name ? 'Bp. ' . auth()->user()->name : 'Bp. Yudha'))
                     </h2>
                     <p class="text-xs text-on-surface-variant truncate hidden xs:block">
                         @yield('header_subtitle', 'Berikut ringkasan aktivitas klinik hari ini.')
@@ -340,10 +340,10 @@
             <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
                 <div class="flex items-center gap-2 sm:gap-3 p-1 rounded-lg">
                     <span class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate">
-                        {{ auth()->user()->name ?? 'Yudha Tama' }}
+                        {{ auth()->user()?->name ?? 'Yudha Tama' }}
                     </span>
                     <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs sm:text-sm overflow-hidden border border-outline-variant shrink-0">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'Yudha', 0, 2)) }}
+                        {{ strtoupper(substr(auth()->user()?->name ?? 'Yudha', 0, 2)) }}
                     </div>
                 </div>
             </div>
