@@ -191,65 +191,27 @@
             class="relative
                    z-10
                    text-center
-                   max-w-md"
+                   max-w-md
+                   flex
+                   flex-col
+                   items-center"
         >
 
 
             <!-- Logo -->
-
-            <div
-                class="mx-auto
-                       w-24
-                       h-24
-                       rounded-3xl
-                       bg-white
-                       border
-                       border-outline-variant
-                       shadow-sm
-                       flex
-                       items-center
-                       justify-center
-                       mb-8"
-            >
-
-                <span
-                    class="material-symbols-outlined
-                           text-primary
-                           text-5xl"
-                    style="font-variation-settings:'FILL' 1;"
+            <div class="mb-8">
+                <img
+                    src="{{ asset('images/Logo Mandala Care.png') }}"
+                    alt="Logo Mandala Care"
+                    class="h-20 w-auto object-contain mx-auto"
                 >
-                    health_and_safety
-                </span>
-
             </div>
-
-
-            <!-- Brand -->
-
-            <h1
-                class="text-5xl
-                       font-bold
-                       text-primary
-                       tracking-tight"
-            >
-                Mandalacare
-            </h1>
-
-
-            <h2
-                class="text-2xl
-                       font-semibold
-                       text-secondary
-                       mt-2"
-            >
-                Clinical Management
-            </h2>
 
 
             <p
                 class="text-lg
                        text-on-surface-variant
-                       mt-5"
+                       mt-2"
             >
                 Sistem manajemen klinik yang membantu
                 mengelola pelayanan pasien secara lebih
@@ -328,32 +290,11 @@
                        mb-8"
             >
 
-                <span
-                    class="material-symbols-outlined
-                           text-primary
-                           text-5xl
-                           mb-3"
-                    style="font-variation-settings:'FILL' 1;"
+                <img
+                    src="{{ asset('images/Logo Mandala Care.png') }}"
+                    alt="Logo Mandala Care"
+                    class="h-12 w-auto object-contain"
                 >
-                    health_and_safety
-                </span>
-
-
-                <h1
-                    class="text-2xl
-                           font-bold
-                           text-primary"
-                >
-                    Mandalacare
-                </h1>
-
-
-                <p
-                    class="text-sm
-                           text-on-surface-variant"
-                >
-                    Clinical Management
-                </p>
 
             </div>
 

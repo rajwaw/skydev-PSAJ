@@ -147,15 +147,14 @@
         class="fixed top-0 left-0 bottom-0 z-50 w-72 md:w-64 bg-[#f9f9ff] border-r-2 border-outline-variant flex flex-col h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out p-4 shadow-2xl md:shadow-none"
     >
         <!-- LOGO & CLOSE BUTTON -->
-        <div class="px-3 mb-4 py-3 flex items-center justify-between">
-            <div>
-                <h1 class="text-xl sm:text-[22px] font-bold text-primary tracking-tight">
-                    Mandalacare
-                </h1>
-                <p class="text-[11px] sm:text-[12px] text-outline font-medium">
-                    Clinical Management
-                </p>
-            </div>
+        <div class="px-2 mb-4 py-2 flex items-center justify-between">
+            <a href="{{ route('dashboard') }}" class="flex items-center">
+                <img
+                    src="{{ asset('images/Logo Mandala Care.png') }}"
+                    alt="Logo Mandala Care"
+                    class="h-10 w-auto object-contain"
+                >
+            </a>
             <!-- Mobile Close Button -->
             <button
                 type="button"
@@ -286,9 +285,11 @@
         <!-- ACCOUNT + LOGOUT -->
         <div class="pt-3 mt-2 border-t border-outline-variant">
             <div class="flex items-center gap-3 px-2 mb-2">
-                <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs shrink-0">
-                    {{ strtoupper(substr(auth()->user()?->name ?? 'Yudha', 0, 2)) }}
-                </div>
+                <img
+                    src="{{ asset('images/profil.png') }}"
+                    alt="Foto Profil"
+                    class="w-9 h-9 rounded-full object-cover shrink-0 border border-outline-variant shadow-sm"
+                >
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold truncate">
                         {{ auth()->user()?->name ?? 'Yudha Tama' }}
@@ -342,9 +343,11 @@
                     <span class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate">
                         {{ auth()->user()?->name ?? 'Yudha Tama' }}
                     </span>
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs sm:text-sm overflow-hidden border border-outline-variant shrink-0">
-                        {{ strtoupper(substr(auth()->user()?->name ?? 'Yudha', 0, 2)) }}
-                    </div>
+                    <img
+                        src="{{ asset('images/profil.png') }}"
+                        alt="Foto Profil"
+                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-outline-variant shrink-0 shadow-sm"
+                    >
                 </div>
             </div>
         </header>
