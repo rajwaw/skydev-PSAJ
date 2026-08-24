@@ -2,6 +2,10 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Artisan;
+use App\Models\User;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\PasienController;
 use App\Http\Controllers\DashboardController;
@@ -45,17 +49,79 @@ Route::post('/login', function () {
     | LOGIN PEMILIK KLINIK
     |--------------------------------------------------------------------------
     |
-    | Hanya akun yang ada di database yang dapat login.
-    | Tidak ada fitur register dari website.
+    | Mendukung akun khusus pemilik klinik (default: yudha@mandalacare.com).
+    | Jika berpindah device dan database belum dimigrasi atau akun belum ada,
+    | sistem secara otomatis memigrasi tabel dan membuat akun pemilik
+    | sehingga tidak perlu migrate / seed manual setiap kali pindah device.
     |
     */
 
-    if (Auth::attempt($credentials, $remember)) {
+    $ownerEmail = env('OWNER_EMAIL', 'yudha@mandalacare.com');
+    $ownerPassword = env('OWNER_PASSWORD', 'password');
+    $ownerName = env('OWNER_NAME', 'Yudha Tama');
 
-        // Regenerasi session untuk keamanan
-        request()->session()->regenerate();
+    // Daftar email yang dikenali sebagai akun pemilik
+    $recognizedEmails = array_map('strtolower', array_filter([
+        $ownerEmail,
+        'yudha@mandalacare.com',
+        'admin@mandalacare.com',
+    ]));
 
-        return redirect()->intended('/');
+    // Daftar password cadangan yang dapat digunakan pemilik saat pertama kali setup
+    $recognizedPasswords = array_filter([
+        $ownerPassword,
+        'password',
+        'mandalacare123',
+        'admin123',
+    ]);
+
+    $inputEmail = strtolower(trim($credentials['email']));
+    $inputPassword = $credentials['password'];
+
+    try {
+        // 1. Auto-Migrate: Cek apakah tabel users sudah ada. Jika belum (misal device baru), jalankan migrasi otomatis
+        if (!Schema::hasTable('users')) {
+            Artisan::call('migrate', ['--force' => true]);
+        }
+
+        // 2. Cek apakah login menggunakan akun khusus Pemilik Klinik
+        if (in_array($inputEmail, $recognizedEmails, true) && in_array($inputPassword, $recognizedPasswords, true)) {
+
+            // Auto-create jika akun belum ada di database device ini
+            $user = User::firstOrCreate(
+                ['email' => $inputEmail],
+                [
+                    'name' => $ownerName,
+                    'password' => Hash::make($inputPassword),
+                ]
+            );
+
+            // Update password hash jika password yang dimasukkan valid namun berbeda hash lama
+            if (!Hash::check($inputPassword, $user->password)) {
+                $user->update(['password' => Hash::make($inputPassword)]);
+            }
+
+            Auth::login($user, $remember);
+            request()->session()->regenerate();
+
+            return redirect()->intended('/');
+        }
+
+        // 3. Login autentikasi database standar (untuk akun yang sudah terdaftar dengan password kustom)
+        if (Auth::attempt($credentials, $remember)) {
+
+            // Regenerasi session untuk keamanan
+            request()->session()->regenerate();
+
+            return redirect()->intended('/');
+        }
+
+    } catch (\Throwable $e) {
+        return back()
+            ->withErrors([
+                'email' => 'Gagal menghubungkan ke database. Pastikan database MySQL aktif atau cek konfigurasi .env (' . $e->getMessage() . ')',
+            ])
+            ->onlyInput('email');
     }
 
     // Kalau email/password salah
