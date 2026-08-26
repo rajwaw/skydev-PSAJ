@@ -254,9 +254,9 @@
 
             <!-- AI CLINICAL ASSISTANT -->
             <a
-                href="#"
+                href="{{ route('ai-clinical-assistant') }}"
                 class="flex items-center gap-3.5 px-4 py-2.5 sm:py-3 rounded-xl transition-all duration-200
-                       {{ request()->routeIs('ai*')
+                       {{ request()->routeIs('ai-clinical-assistant*')
                            ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm'
                            : 'text-on-surface-variant hover:bg-surface-container-low' }}"
             >

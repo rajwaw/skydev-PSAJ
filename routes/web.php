@@ -14,6 +14,8 @@ use App\Http\Controllers\RekamMedisController;
 use App\Http\Controllers\EvaluasiController;
 use App\Http\Controllers\ImplementasiController;
 use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\AiClinicalAssistantController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -242,6 +244,13 @@ Route::get('/evaluasi/pasien/{id}', [EvaluasiController::class, 'getPasienDetail
     ->name('evaluasi.pasien.detail');
 
 
+/*
+|--------------------------------------------------------------------------
+| AI CLINICAL ASSISTANT
+|--------------------------------------------------------------------------
+*/
+Route::get('/ai-clinical-assistant', [AiClinicalAssistantController::class, 'index'])->name('ai-clinical-assistant');
+Route::get('/ai-clinical-assistant/pasien/{id}', [AiClinicalAssistantController::class, 'getSummary'])->name('ai-clinical-assistant.summary');    
 
 /*
 |--------------------------------------------------------------------------
