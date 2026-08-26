@@ -64,21 +64,18 @@ class PembayaranController extends Controller
         $existingPembayaran = $latestPendaftaran ? $latestPendaftaran->pembayaran : null;
 
         // 3. Ringkasan Pendapatan & Statistik
-        // NOTE: kolom asli di tabel `pembayaran` adalah `jumlah_bayar` (total) dan
-        // `status_pembayaran` (bukan `total_bayar` / `status_bayar`).
         $today = Carbon::today();
-
         $pendapatanHariIni = Pembayaran::whereDate('created_at', $today)
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
-            ->sum('jumlah_bayar');
+            ->sum('total_bayar');
 
         $transaksiHariIni = Pembayaran::whereDate('created_at', $today)
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
             ->count();
 
@@ -86,31 +83,31 @@ class PembayaranController extends Controller
         $endOfWeek = Carbon::now()->endOfWeek();
         $pendapatanMingguIni = Pembayaran::whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
-            ->sum('jumlah_bayar');
+            ->sum('total_bayar');
 
         $transaksiMingguIni = Pembayaran::whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
             ->count();
 
         $pendapatanBulanIni = Pembayaran::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
-            ->sum('jumlah_bayar');
+            ->sum('total_bayar');
 
         $transaksiBulanIni = Pembayaran::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->where(function ($q) {
-                $q->where('status_pembayaran', 'lunas')
-                  ->orWhere('status_pembayaran', 'Lunas');
+                $q->where('status_bayar', 'lunas')
+                  ->orWhere('status_bayar', 'Lunas');
             })
             ->count();
 
@@ -222,25 +219,21 @@ class PembayaranController extends Controller
                 'resep_obat'         => $latestImplementasi ? $latestImplementasi->resep_obat : '',
             ],
             'obat_saran' => $obatSuggestions,
-            // Kolom asli tabel `pembayaran`: id_pembayaran, id_pendaftaran, jumlah_bayar,
-            // metode_pembayaran, uang_dibayar, kembalian, catatan, rincian_obat,
-            // rincian_tindakan, status_pembayaran, created_at, updated_at.
-            // Tidak ada kolom biaya_tindakan/biaya_obat/total_bayar/status_bayar di DB,
-            // jadi rincian per-item tetap diambil dari rincian_obat & rincian_tindakan (JSON),
-            // sedangkan totalnya memakai jumlah_bayar.
             'pembayaran' => $existingPembayaran ? [
                 'id_pembayaran'     => $existingPembayaran->id_pembayaran,
-                'jumlah_bayar'      => (float) $existingPembayaran->jumlah_bayar,
-                'status_pembayaran' => $existingPembayaran->status_pembayaran,
+                'biaya_tindakan'    => (float) $existingPembayaran->biaya_tindakan,
+                'biaya_obat'        => (float) $existingPembayaran->biaya_obat,
+                'total_bayar'       => (float) $existingPembayaran->total_bayar,
+                'status_bayar'      => $existingPembayaran->status_bayar,
                 'metode_pembayaran' => $existingPembayaran->metode_pembayaran,
                 'uang_dibayar'      => (float) $existingPembayaran->uang_dibayar,
                 'kembalian'         => (float) $existingPembayaran->kembalian,
                 'catatan'           => $existingPembayaran->catatan,
-                'rincian_obat'      => is_string($existingPembayaran->rincian_obat)
-                    ? json_decode($existingPembayaran->rincian_obat, true)
+                'rincian_obat'      => is_string($existingPembayaran->rincian_obat) 
+                    ? json_decode($existingPembayaran->rincian_obat, true) 
                     : $existingPembayaran->rincian_obat,
-                'rincian_tindakan'  => is_string($existingPembayaran->rincian_tindakan)
-                    ? json_decode($existingPembayaran->rincian_tindakan, true)
+                'rincian_tindakan'  => is_string($existingPembayaran->rincian_tindakan) 
+                    ? json_decode($existingPembayaran->rincian_tindakan, true) 
                     : $existingPembayaran->rincian_tindakan,
             ] : null,
         ]);
@@ -312,22 +305,20 @@ class PembayaranController extends Controller
                 }
             }
 
-            // biaya_tindakan & biaya_obat hanya dipakai untuk menghitung total di sini;
-            // tabel `pembayaran` tidak punya kolom untuk keduanya secara terpisah,
-            // rinciannya tersimpan di rincian_obat / rincian_tindakan (JSON).
             $biayaObat = (float) ($request->biaya_obat ?? 0);
             $biayaTindakan = (float) ($request->biaya_tindakan ?? 0);
-            $jumlahBayar = $biayaObat + $biayaTindakan;
+            $totalBayar = $biayaObat + $biayaTindakan;
             $uangDibayar = (float) ($request->uang_dibayar ?? 0);
-            $kembalian = max(0, $uangDibayar - $jumlahBayar);
+            $kembalian = max(0, $uangDibayar - $totalBayar);
 
             // 3. Simpan atau perbarui record Pembayaran
             $pembayaran = Pembayaran::where('id_pendaftaran', $pendaftaran->id_pendaftaran)->first();
 
             $dataPembayaran = [
                 'id_pendaftaran'    => $pendaftaran->id_pendaftaran,
-                'jumlah_bayar'      => $jumlahBayar,
-                'status_pembayaran' => 'lunas',
+                'biaya_tindakan'    => $biayaTindakan,
+                'biaya_obat'        => $biayaObat,
+                'status_bayar'      => 'lunas',
                 'metode_pembayaran' => strtolower($request->metode_pembayaran),
                 'uang_dibayar'      => $uangDibayar,
                 'kembalian'         => $kembalian,
@@ -350,9 +341,9 @@ class PembayaranController extends Controller
             if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Pembayaran untuk pasien ' . $pasien->nama_lengkap . ' sejumlah Rp ' . number_format($jumlahBayar, 0, ',', '.') . ' berhasil disimpan!',
+                    'message' => 'Pembayaran untuk pasien ' . $pasien->nama_lengkap . ' sejumlah Rp ' . number_format($totalBayar, 0, ',', '.') . ' berhasil disimpan!',
                     'id_pembayaran' => $pembayaran->id_pembayaran,
-                    'jumlah_bayar'  => $jumlahBayar,
+                    'total_bayar'   => $totalBayar,
                     'uang_dibayar'  => $uangDibayar,
                     'kembalian'     => $kembalian,
                     'nama_pasien'   => $pasien->nama_lengkap,
