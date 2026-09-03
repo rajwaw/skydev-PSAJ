@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pasien;
+use App\Models\AiPercakapan;
+use App\Models\AiPesan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AiClinicalAssistantController extends Controller
 {
@@ -77,6 +80,66 @@ class AiClinicalAssistantController extends Controller
         }
     }
 
+    public function getGrafikData(Request $request, $id)
+    {
+        $pasien = Pasien::with([
+            'rekamMedis' => function ($q) {
+                $q->reorder('tgl_pemeriksaan')->limit(15);
+            },
+            'rekamMedis.asuhanMedis',
+            'rekamMedis.evaluasi',
+        ])->findOrFail($id);
+
+        $tandaVital = [];
+        $statusEvaluasiCount = [
+            'Stabil' => 0,
+            'Membaik' => 0,
+            'Tidak Berubah' => 0,
+            'Memburuk' => 0,
+        ];
+
+        foreach ($pasien->rekamMedis as $rm) {
+            $asuhan = $rm->asuhanMedis;
+
+            if ($asuhan) {
+                $tandaVital[] = [
+                    'tanggal' => $rm->tgl_pemeriksaan ? $rm->tgl_pemeriksaan->format('d/m/y') : null,
+                    'tekanan_darah_sistol' => $this->parseAngkaSistol($asuhan->tekanan_darah),
+                    'nadi' => $asuhan->nadi !== null ? (float) $asuhan->nadi : null,
+                    'suhu' => $asuhan->suhu_tubuh !== null ? (float) $asuhan->suhu_tubuh : null,
+                    'spo2' => $asuhan->spo2 !== null ? (float) $asuhan->spo2 : null,
+                ];
+            }
+
+            if ($rm->evaluasi && isset($statusEvaluasiCount[$rm->evaluasi->status_kondisi])) {
+                $statusEvaluasiCount[$rm->evaluasi->status_kondisi]++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'tanda_vital' => $tandaVital,
+            'status_evaluasi' => $statusEvaluasiCount,
+        ]);
+    }
+
+    private function parseAngkaSistol(?string $tekananDarah): ?float
+    {
+        if (!$tekananDarah) {
+            return null;
+        }
+
+        if (preg_match('/(\d+)\s*\/\s*\d+/', $tekananDarah, $m)) {
+            return (float) $m[1];
+        }
+
+        if (is_numeric($tekananDarah)) {
+            return (float) $tekananDarah;
+        }
+
+        return null;
+    }
+
     private function buildPrompt(Pasien $pasien): string
     {
         $text = "Data Pasien:\n";
@@ -121,5 +184,103 @@ class AiClinicalAssistantController extends Controller
         $text .= "\nTolong buatkan ringkasan naratif singkat (maksimal 200 kata) mencakup: kondisi umum pasien, hal penting yang perlu diperhatikan (alergi/kondisi khusus), riwayat kunjungan terakhir, dan catatan untuk kunjungan berikutnya jika ada.";
 
         return $text;
+    }
+
+    public function daftarPercakapan(Request $request)
+    {
+        $percakapan = AiPercakapan::with('pasien')
+            ->where('user_id', auth()->id())
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $percakapan]);
+    }
+
+    public function buatPercakapan(Request $request)
+    {
+        $percakapan = AiPercakapan::create([
+            'id_pasien' => $request->input('id_pasien'),
+            'user_id' => auth()->id(),
+            'judul' => null,
+        ]);
+
+        return response()->json(['success' => true, 'id_percakapan' => $percakapan->id_percakapan]);
+    }
+
+    public function getPercakapan(Request $request, $id)
+    {
+        $percakapan = AiPercakapan::with(['pesan', 'pasien'])->findOrFail($id);
+
+        return response()->json(['success' => true, 'data' => $percakapan]);
+    }
+
+    public function kirimPesan(Request $request, $id)
+    {
+        $request->validate(['pesan' => 'required|string']);
+
+        $percakapan = AiPercakapan::with(['pesan', 'pasien'])->findOrFail($id);
+
+        AiPesan::create([
+            'id_percakapan' => $id,
+            'role' => 'user',
+            'isi' => $request->input('pesan'),
+        ]);
+
+        if (!$percakapan->judul) {
+            $percakapan->update(['judul' => Str::limit($request->input('pesan'), 50)]);
+        }
+
+        $systemPrompt = 'Kamu adalah asisten AI yang membantu tenaga medis klinik dengan informasi klinis. '
+            . 'JANGAN membuat diagnosa pasti atau resep obat baru yang tidak berbasis data yang diberikan. '
+            . 'Selalu ingatkan bahwa jawabanmu perlu diverifikasi tenaga medis untuk hal yang krusial. '
+            . 'Gunakan bahasa Indonesia yang jelas dan profesional.';
+
+        if ($percakapan->pasien) {
+            $systemPrompt .= "\n\nKonteks pasien yang sedang dibahas:\n" . $this->buildPrompt($percakapan->pasien);
+        }
+
+        $contents = [];
+        foreach ($percakapan->pesan()->orderBy('created_at')->get() as $pesan) {
+            $contents[] = [
+                'role' => $pesan->role === 'user' ? 'user' : 'model',
+                'parts' => [['text' => $pesan->isi]],
+            ];
+        }
+
+        try {
+            $response = Http::timeout(30)->withHeaders([
+                'Content-Type' => 'application/json',
+                'x-goog-api-key' => config('services.gemini.key'),
+            ])->post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent',
+                [
+                    'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+                    'contents' => $contents,
+                ]
+            );
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghubungi AI (error ' . $response->status() . ').',
+                ]);
+            }
+
+            $aiText = $response->json('candidates.0.content.parts.0.text') ?? 'AI tidak mengembalikan hasil.';
+
+            AiPesan::create([
+                'id_percakapan' => $id,
+                'role' => 'assistant',
+                'isi' => $aiText,
+            ]);
+
+            $percakapan->touch();
+
+            return response()->json(['success' => true, 'balasan' => $aiText]);
+
+        } catch (\Exception $e) {
+            Log::error('Gemini Chat exception', ['message' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
     }
 }

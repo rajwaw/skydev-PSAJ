@@ -325,7 +325,7 @@
                                 onclick="tambahBarisObat('Obat')"
                                 class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[16px]">add</span>
-                                <span>+ Obat</span>
+                                <span>Obat</span>
                             </button>
 
                             <button
@@ -333,7 +333,7 @@
                                 onclick="tambahBarisObat('Tindakan')"
                                 class="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold px-3 py-2 rounded-xl transition-all inline-flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[16px]">add</span>
-                                <span>+ Tindakan/Jasa</span>
+                                <span>Tindakan/Jasa</span>
                             </button>
                         </div>
                     </div>
@@ -478,10 +478,10 @@
                                     id="inputMetode"
                                     required
                                     class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100">
-                                    <option value="tunai" selected>💵 Tunai (Cash)</option>
-                                    <option value="qris">📱 QRIS</option>
-                                    <option value="transfer">🏦 Transfer Bank</option>
-                                    <option value="debit">💳 Kartu Debit</option>
+                                    <option value="tunai" selected>Tunai (Cash)</option>
+                                    <option value="qris">QRIS</option>
+                                    <option value="transfer">Transfer Bank</option>
+                                    <option value="debit">Kartu Debit</option>
                                 </select>
                             </div>
 

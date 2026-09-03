@@ -250,7 +250,12 @@ Route::get('/evaluasi/pasien/{id}', [EvaluasiController::class, 'getPasienDetail
 |--------------------------------------------------------------------------
 */
 Route::get('/ai-clinical-assistant', [AiClinicalAssistantController::class, 'index'])->name('ai-clinical-assistant');
-Route::get('/ai-clinical-assistant/pasien/{id}', [AiClinicalAssistantController::class, 'getSummary'])->name('ai-clinical-assistant.summary');    
+Route::get('/ai-clinical-assistant/pasien/{id}', [AiClinicalAssistantController::class, 'getSummary'])->name('ai-clinical-assistant.summary');
+Route::get('/ai-clinical-assistant/pasien/{id}/grafik', [AiClinicalAssistantController::class, 'getGrafikData'])->name('ai-clinical-assistant.grafik');
+Route::get('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'daftarPercakapan'])->name('ai-clinical-assistant.percakapan.index');
+Route::post('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'buatPercakapan'])->name('ai-clinical-assistant.percakapan.store');
+Route::get('/ai-clinical-assistant/percakapan/{id}', [AiClinicalAssistantController::class, 'getPercakapan'])->name('ai-clinical-assistant.percakapan.show');
+Route::post('/ai-clinical-assistant/percakapan/{id}/pesan', [AiClinicalAssistantController::class, 'kirimPesan'])->name('ai-clinical-assistant.percakapan.pesan');    
 
 /*
 |--------------------------------------------------------------------------
