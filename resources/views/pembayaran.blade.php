@@ -730,103 +730,148 @@
 
 
 {{-- ================= MODAL CETAK NOTA / STRUK PEMBAYARAN ================= --}}
-<div id="modalNota" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+<div id="modalNota" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh]">
         
         {{-- Modal Header --}}
-        <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-emerald-600">receipt</span>
-                <h3 class="font-bold text-slate-900 text-sm sm:text-base">Kuitansi / Nota Pembayaran</h3>
-            </div>
-            <button type="button" onclick="tutupModalNota()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
-                <span class="material-symbols-outlined text-lg">close</span>
-            </button>
-        </div>
-
-        {{-- Printable Receipt Content --}}
-        <div class="p-6 overflow-y-auto flex-1 text-slate-800" id="printArea">
-            <div class="text-center pb-4 border-b border-dashed border-slate-300">
-                <h2 class="text-lg font-bold text-emerald-800 tracking-tight">KLINIK MANDALACARE</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Layanan Kesehatan & Rawat Jalan Profesional</p>
-                <p class="text-[11px] text-slate-600 mt-1">Jl. Menara, Gg. Puter, RT 10/RW 06, Desa Kedungwringin, Kecamatan Patikraja</p>
-                <p class="text-[11px] text-slate-600 font-semibold mt-0.5">Telp/WA: +62 881-8080-805</p>
-            </div>
-
-            <div class="py-3 border-b border-dashed border-slate-300 text-xs space-y-1">
-                <div class="flex justify-between">
-                    <span class="text-slate-500">No. Transaksi:</span>
-                    <span id="notaNoTrx" class="font-bold text-slate-800">#TRX-0001</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Tanggal:</span>
-                    <span id="notaTanggal" class="font-medium text-slate-800">-</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Pasien / No. RM:</span>
-                    <span id="notaPasien" class="font-bold text-slate-900">-</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Metode Bayar:</span>
-                    <span id="notaMetode" class="font-semibold text-slate-800 uppercase">TUNAI</span>
+        <div class="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="material-symbols-outlined text-emerald-600 shrink-0">receipt_long</span>
+                <div class="truncate">
+                    <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">Nota Pembayaran</h3>
+                    <p class="text-[11px] text-slate-500 truncate">Format Kertas Struk / Nota Thermal</p>
                 </div>
             </div>
+            
+            {{-- Ukuran Kertas Selector --}}
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center bg-slate-200/90 p-0.5 rounded-xl text-xs">
+                    <button type="button" id="btnSize80" onclick="setUkuranNota('80mm')" 
+                        class="px-2.5 py-1 rounded-lg font-bold text-xs transition-all bg-white text-emerald-700 shadow-sm flex items-center gap-1">
+                        <span>80mm</span>
+                        <span class="text-[10px] opacity-75 font-normal hidden sm:inline">(Standar)</span>
+                    </button>
+                    <button type="button" id="btnSize58" onclick="setUkuranNota('58mm')" 
+                        class="px-2.5 py-1 rounded-lg font-semibold text-xs transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1">
+                        <span>58mm</span>
+                        <span class="text-[10px] opacity-75 font-normal hidden sm:inline">(Mini)</span>
+                    </button>
+                </div>
 
-            {{-- Table of items in receipt --}}
-            <div class="py-3 border-b border-dashed border-slate-300">
-                <table class="w-full text-xs">
-                    <thead>
-                        <tr class="text-slate-500 border-b border-slate-200">
-                            <th class="text-left pb-1 font-semibold">Item Obat / Layanan</th>
-                            <th class="text-center pb-1 font-semibold w-12">Qty</th>
-                            <th class="text-right pb-1 font-semibold">Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody id="notaItemBody" class="divide-y divide-slate-100">
-                        {{-- Items injected dynamically --}}
-                    </tbody>
-                </table>
-            </div>
-
-            {{-- Totals --}}
-            <div class="pt-3 text-xs space-y-1.5">
-                <div class="flex justify-between text-slate-600">
-                    <span>Biaya Obat:</span>
-                    <span id="notaBiayaObat" class="font-semibold">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-slate-600">
-                    <span>Biaya Tindakan:</span>
-                    <span id="notaBiayaTindakan" class="font-semibold">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
-                    <span>TOTAL BAYAR:</span>
-                    <span id="notaTotalBayar" class="text-emerald-700 text-base">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-slate-600 pt-1">
-                    <span>Uang Diterima:</span>
-                    <span id="notaUangDibayar" class="font-semibold">Rp 0</span>
-                </div>
-                <div class="flex justify-between text-slate-600">
-                    <span>Kembalian:</span>
-                    <span id="notaKembalian" class="font-semibold text-emerald-600">Rp 0</span>
-                </div>
-            </div>
-
-            <div class="mt-6 text-center text-[11px] text-slate-400 pt-3 border-t border-dashed border-slate-300">
-                <p>Terima kasih atas kunjungan Anda.</p>
-                <p>Semoga lekas sembuh dan sehat selalu!</p>
+                <button type="button" onclick="tutupModalNota()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
             </div>
         </div>
 
-        {{-- Modal Actions --}}
-        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
-            <button type="button" onclick="tutupModalNota()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors">
-                Tutup
-            </button>
-            <button type="button" onclick="printNota()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm">
-                <span class="material-symbols-outlined text-[16px]">print</span>
-                <span>Cetak Nota</span>
-            </button>
+        {{-- Printable Receipt Content in Realistic Paper Wrapper --}}
+        <div class="p-4 sm:p-6 bg-slate-100/90 overflow-y-auto flex-1 flex justify-center items-start">
+            <div id="notaPaperWrapper" class="bg-white border border-slate-300/90 shadow-md rounded-sm p-4 sm:p-5 w-full max-w-[340px] text-slate-900 transition-all duration-300">
+                <div id="printArea" class="bg-white text-slate-900 font-sans">
+                    
+                    {{-- Header Nota / Kop Klinik --}}
+                    <div class="text-center pb-2">
+                        <h2 class="clinic-title text-base sm:text-lg font-extrabold text-emerald-800 tracking-tight leading-tight">KLINIK MANDALACARE</h2>
+                        <p class="clinic-sub text-[11px] text-slate-600 font-medium mt-0.5">Layanan Kesehatan & Rawat Jalan Profesional</p>
+                        <p class="clinic-sub text-[10px] text-slate-500 mt-0.5 leading-snug">Jl. Menara, Gg. Puter, RT 10/RW 06, Kedungwringin, Patikraja</p>
+                        <p class="clinic-sub text-[10px] text-slate-700 font-semibold mt-0.5">Telp/WA: +62 881-8080-805</p>
+                    </div>
+
+                    <div class="dashed-sep border-t border-dashed border-slate-400 my-2"></div>
+
+                    {{-- Metadata Transaksi --}}
+                    <div class="space-y-1 text-xs py-0.5">
+                        <div class="row-meta flex justify-between items-start">
+                            <span class="label text-slate-500">No. Transaksi:</span>
+                            <span id="notaNoTrx" class="value font-bold text-slate-900">#TRX-0001</span>
+                        </div>
+                        <div class="row-meta flex justify-between items-start">
+                            <span class="label text-slate-500">Tanggal:</span>
+                            <span id="notaTanggal" class="value font-medium text-slate-800">-</span>
+                        </div>
+                        <div class="row-meta flex justify-between items-start">
+                            <span class="label text-slate-500">Pasien / RM:</span>
+                            <span id="notaPasien" class="value font-bold text-slate-900 text-right">-</span>
+                        </div>
+                        <div class="row-meta flex justify-between items-start">
+                            <span class="label text-slate-500">Metode Bayar:</span>
+                            <span id="notaMetode" class="value font-bold text-slate-900 uppercase">TUNAI</span>
+                        </div>
+                    </div>
+
+                    <div class="dashed-sep border-t border-dashed border-slate-400 my-2"></div>
+
+                    {{-- Table of items in receipt --}}
+                    <div class="py-1">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-slate-600 border-b border-dashed border-slate-400">
+                                    <th class="text-left pb-1 font-semibold">Item Obat / Layanan</th>
+                                    <th class="text-center pb-1 font-semibold w-10">Qty</th>
+                                    <th class="text-right pb-1 font-semibold">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="notaItemBody" class="divide-y divide-slate-100">
+                                {{-- Items injected dynamically --}}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="dashed-sep border-t border-dashed border-slate-400 my-2"></div>
+
+                    {{-- Totals --}}
+                    <div class="space-y-1 text-xs py-1 total-box">
+                        <div class="total-row flex justify-between text-slate-600">
+                            <span>Biaya Obat:</span>
+                            <span id="notaBiayaObat" class="val font-semibold text-slate-900">Rp 0</span>
+                        </div>
+                        <div class="total-row flex justify-between text-slate-600">
+                            <span>Biaya Tindakan:</span>
+                            <span id="notaBiayaTindakan" class="val font-semibold text-slate-900">Rp 0</span>
+                        </div>
+                        <div class="grand-total flex justify-between items-center text-sm font-bold text-slate-900 py-1.5 border-y border-dashed border-slate-800 my-1">
+                            <span>TOTAL BAYAR:</span>
+                            <span id="notaTotalBayar" class="text-emerald-700 font-extrabold text-base">Rp 0</span>
+                        </div>
+                        <div class="total-row flex justify-between text-slate-600">
+                            <span>Uang Diterima:</span>
+                            <span id="notaUangDibayar" class="val font-semibold text-slate-900">Rp 0</span>
+                        </div>
+                        <div class="total-row flex justify-between text-slate-600">
+                            <span>Kembalian:</span>
+                            <span id="notaKembalian" class="val font-bold text-emerald-600">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="dashed-sep border-t border-dashed border-slate-400 my-2"></div>
+
+                    {{-- Footer --}}
+                    <div class="footer text-center text-[10px] text-slate-500 pt-1 leading-relaxed">
+                        <p class="lunas-badge font-bold text-emerald-800 text-[11px] mb-0.5">*** LUNAS ***</p>
+                        <p>Terima kasih atas kunjungan Anda.</p>
+                        <p>Semoga lekas sembuh dan sehat selalu!</p>
+                        <p class="system-tag text-[9px] text-slate-400 mt-1.5 tracking-wider font-mono">SIM-KLINIK MANDALACARE</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal Actions & Print Hint --}}
+        <div class="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                <span class="material-symbols-outlined text-amber-500 text-base shrink-0">tips_and_updates</span>
+                <span>Pilih <b>Margin: None</b> pada dialog print browser untuk hasil pas.</span>
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button type="button" onclick="tutupModalNota()" class="flex-1 sm:flex-none px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors">
+                    Tutup
+                </button>
+                <button type="button" onclick="printNota()" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95">
+                    <span class="material-symbols-outlined text-[17px]">print</span>
+                    <span>Cetak Nota (<span id="lblBtnUkuran">80mm</span>)</span>
+                </button>
+            </div>
         </div>
 
     </div>
@@ -1306,6 +1351,32 @@ function bukaModalNota() {
     });
 }
 
+let ukuranNotaAktif = '80mm';
+
+function setUkuranNota(size) {
+    ukuranNotaAktif = size;
+    const btn80 = document.getElementById('btnSize80');
+    const btn58 = document.getElementById('btnSize58');
+    const wrapper = document.getElementById('notaPaperWrapper');
+    const lblBtn = document.getElementById('lblBtnUkuran');
+
+    if (lblBtn) lblBtn.textContent = size;
+
+    if (size === '58mm') {
+        if (btn58) btn58.className = 'px-2.5 py-1 rounded-lg font-bold text-xs transition-all bg-white text-emerald-700 shadow-sm flex items-center gap-1';
+        if (btn80) btn80.className = 'px-2.5 py-1 rounded-lg font-semibold text-xs transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1';
+        if (wrapper) {
+            wrapper.style.maxWidth = '250px';
+        }
+    } else {
+        if (btn80) btn80.className = 'px-2.5 py-1 rounded-lg font-bold text-xs transition-all bg-white text-emerald-700 shadow-sm flex items-center gap-1';
+        if (btn58) btn58.className = 'px-2.5 py-1 rounded-lg font-semibold text-xs transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1';
+        if (wrapper) {
+            wrapper.style.maxWidth = '340px';
+        }
+    }
+}
+
 function cetakRiwayatNota(data) {
     document.getElementById('notaNoTrx').textContent = '#TRX-' + String(data.id).padStart(4, '0');
     document.getElementById('notaTanggal').textContent = data.tgl || '-';
@@ -1318,19 +1389,24 @@ function cetakRiwayatNota(data) {
 
     if (items.length > 0) {
         items.forEach(it => {
-            const sub = (it.jumlah || 1) * (it.harga || 0);
+            const qty = it.jumlah || 1;
+            const sub = qty * (it.harga || 0);
+            const hargaUnit = it.harga ? `Rp ${formatRupiah(it.harga)}` : '';
             itemsHtml += `
                 <tr class="py-1">
-                    <td class="py-1 text-slate-800 font-medium">${escapeHtml(it.nama || '-')}</td>
-                    <td class="py-1 text-center text-slate-600">${it.jumlah || 1}</td>
-                    <td class="py-1 text-right font-semibold text-slate-900">Rp ${formatRupiah(sub)}</td>
+                    <td class="py-1 text-left align-top">
+                        <div class="item-name font-semibold text-slate-800 text-xs">${escapeHtml(it.nama || '-')}</div>
+                        ${hargaUnit ? `<div class="item-price-unit text-[10px] text-slate-500">@ ${hargaUnit}</div>` : ''}
+                    </td>
+                    <td class="py-1 text-center text-slate-600 align-top text-xs">${qty}</td>
+                    <td class="py-1 text-right font-bold text-slate-900 align-top text-xs">Rp ${formatRupiah(sub)}</td>
                 </tr>
             `;
         });
     } else {
         itemsHtml = `
             <tr>
-                <td colspan="3" class="py-2 text-center text-slate-400">Rincian Obat & Layanan Kesehatan</td>
+                <td colspan="3" class="py-2 text-center text-slate-400 text-xs italic">Rincian Layanan & Obat</td>
             </tr>
         `;
     }
@@ -1342,6 +1418,8 @@ function cetakRiwayatNota(data) {
     document.getElementById('notaUangDibayar').textContent = 'Rp ' + formatRupiah(data.dibayar || 0);
     document.getElementById('notaKembalian').textContent = 'Rp ' + formatRupiah(data.kembalian || 0);
 
+    setUkuranNota(ukuranNotaAktif);
+
     const modal = document.getElementById('modalNota');
     modal.classList.remove('hidden');
 }
@@ -1350,47 +1428,242 @@ function tutupModalNota() {
     document.getElementById('modalNota').classList.add('hidden');
 }
 
+// Close modal on outside click and Escape key
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalNota');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) tutupModalNota();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const m = document.getElementById('modalNota');
+            if (m && !m.classList.contains('hidden')) tutupModalNota();
+        }
+    });
+});
+
 function printNota() {
+    const is58 = ukuranNotaAktif === '58mm';
+    const paperWidth = is58 ? '58mm' : '80mm';
+    const baseFontSize = is58 ? '9.5px' : '11px';
+    const headerTitleSize = is58 ? '13px' : '15px';
+    const headerSubSize = is58 ? '8.5px' : '9.5px';
+    const padding = is58 ? '2mm 1.5mm' : '3mm 2.5mm';
+
     const printContents = document.getElementById('printArea').innerHTML;
-    const win = window.open('', '', 'height=650,width=450');
-    win.document.write('<html><head><title>Nota Pembayaran - Mandalacare</title>');
-    win.document.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">');
-    win.document.write('<style>');
-    win.document.write(`
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #1e293b; font-size: 12px; }
+    const noTrx = document.getElementById('notaNoTrx')?.textContent?.trim() || 'TRX';
+
+    const win = window.open('', '', 'height=680,width=450');
+    if (!win) {
+        alert('Jendela cetak terblokir oleh browser. Harap izinkan popup untuk mencetak nota.');
+        return;
+    }
+
+    win.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <title>Nota_${noTrx}_Mandalacare</title>
+    <style>
+        @page {
+            size: ${paperWidth} auto;
+            margin: 0mm;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: ${paperWidth};
+            background: #ffffff;
+            margin: 0 auto;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: ${baseFontSize};
+            line-height: 1.35;
+            color: #000000;
+            padding: ${padding};
+            width: ${paperWidth};
+            max-width: ${paperWidth};
+            margin: 0 auto;
+            word-break: break-word;
+        }
+        @media print {
+            html, body {
+                width: ${paperWidth} !important;
+                max-width: ${paperWidth} !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+            }
+            .nota-container {
+                width: 100% !important;
+                max-width: ${paperWidth} !important;
+                margin: 0 !important;
+                padding: ${padding} !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
         .text-center { text-align: center; }
-        .font-bold { font-weight: 700; }
-        .font-semibold { font-weight: 600; }
-        .text-emerald-800 { color: #065f46; }
-        .text-slate-500 { color: #64748b; }
-        .text-slate-400 { color: #94a3b8; }
-        .text-slate-600 { color: #475569; }
-        .text-slate-800 { color: #1e293b; }
-        .text-slate-900 { color: #0f172a; }
-        .border-b { border-bottom: 1px dashed #cbd5e1; }
-        .border-t { border-top: 1px dashed #cbd5e1; }
-        .py-3 { padding-top: 8px; padding-bottom: 8px; }
-        .pb-4 { padding-bottom: 12px; }
-        .pt-3 { padding-top: 8px; }
-        .mt-6 { margin-top: 16px; }
-        .mt-1 { margin-top: 4px; }
-        .mt-0.5 { margin-top: 2px; }
-        .flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11px; }
-        th { border-bottom: 1px solid #e2e8f0; padding: 4px 0; }
-        td { padding: 4px 0; }
         .text-left { text-align: left; }
         .text-right { text-align: right; }
-    `);
-    win.document.write('</style></head><body>');
-    win.document.write(printContents);
-    win.document.write('</body></html>');
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-extrabold { font-weight: 800; }
+        .font-medium { font-weight: 500; }
+        .uppercase { text-transform: uppercase; }
+        .italic { font-style: italic; }
+
+        .clinic-title {
+            font-size: ${headerTitleSize};
+            font-weight: 800;
+            color: #065f46;
+            letter-spacing: -0.01em;
+            margin-bottom: 2px;
+            text-align: center;
+        }
+        .clinic-sub {
+            font-size: ${headerSubSize};
+            color: #374151;
+            line-height: 1.25;
+            text-align: center;
+        }
+
+        .dashed-sep {
+            border-top: 1px dashed #4b5563;
+            margin: 5px 0;
+            height: 0;
+        }
+
+        .flex {
+            display: flex;
+        }
+        .justify-between {
+            justify-content: space-between;
+        }
+        .items-center {
+            align-items: center;
+        }
+
+        .row-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2px;
+            font-size: ${baseFontSize};
+        }
+        .row-meta .label {
+            color: #4b5563;
+            flex-shrink: 0;
+            margin-right: 6px;
+        }
+        .row-meta .value {
+            font-weight: 600;
+            color: #000000;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: ${baseFontSize};
+            margin: 3px 0;
+        }
+        th {
+            border-bottom: 1px dashed #4b5563;
+            padding: 3px 0;
+            font-weight: 600;
+            color: #374151;
+        }
+        td {
+            padding: 2.5px 0;
+            vertical-align: top;
+        }
+        .item-name {
+            font-weight: 600;
+            color: #000000;
+            line-height: 1.25;
+        }
+        .item-price-unit {
+            font-size: ${headerSubSize};
+            color: #4b5563;
+        }
+
+        .total-box {
+            margin-top: 2px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+            color: #374151;
+            font-size: ${baseFontSize};
+        }
+        .total-row .val {
+            font-weight: 600;
+            color: #000000;
+        }
+        .grand-total {
+            font-size: ${is58 ? '12px' : '13.5px'};
+            font-weight: 800;
+            color: #065f46;
+            padding: 4px 0;
+            border-top: 1px dashed #000000;
+            border-bottom: 1px dashed #000000;
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer {
+            margin-top: 6px;
+            text-align: center;
+            font-size: ${headerSubSize};
+            color: #4b5563;
+            line-height: 1.35;
+        }
+        .footer .lunas-badge {
+            font-size: ${baseFontSize};
+            font-weight: 700;
+            color: #065f46;
+            margin-bottom: 2px;
+        }
+        .footer .system-tag {
+            font-size: 8px;
+            color: #9ca3af;
+            margin-top: 4px;
+            letter-spacing: 0.05em;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="nota-container">
+        ${printContents}
+    </div>
+</body>
+</html>`);
+
     win.document.close();
     win.focus();
     setTimeout(() => {
         win.print();
-        win.close();
+        win.onafterprint = function() {
+            try { win.close(); } catch(e) {}
+        };
+        setTimeout(() => {
+            try { win.close(); } catch(e) {}
+        }, 1500);
     }, 350);
 }
 

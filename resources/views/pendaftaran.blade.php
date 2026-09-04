@@ -185,23 +185,41 @@
                     {{-- NIK --}}
                     <div class="space-y-2">
 
-                        <label
-                            for="nik"
-                            class="text-sm font-semibold text-on-surface block"
-                        >
-                            NIK <span class="text-red-500">*</span>
-                        </label>
+                        <div class="flex items-center justify-between">
+                            <label
+                                for="nik"
+                                class="text-sm font-semibold text-on-surface block"
+                            >
+                                NIK <span class="text-red-500">*</span>
+                            </label>
+                            <span id="nikCounter" class="text-[11px] font-medium text-slate-400 font-mono">
+                                0 / 16 digit
+                            </span>
+                        </div>
 
-                        <input
-                            id="nik"
-                            type="text"
-                            name="nik"
-                            value="{{ old('nik') }}"
-                            placeholder="Masukkan NIK"
-                            maxlength="20"
-                            required
-                            class="w-full bg-white border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/50 input-ring"
-                        >
+                        <div class="relative">
+                            <input
+                                id="nik"
+                                type="text"
+                                name="nik"
+                                value="{{ old('nik') }}"
+                                placeholder="Masukkan 16 digit NIK"
+                                minlength="16"
+                                maxlength="16"
+                                required
+                                inputmode="numeric"
+                                oninput="handleNikInput(this)"
+                                class="w-full bg-white border border-outline-variant rounded-xl px-4 py-3 text-sm text-on-surface placeholder-on-surface-variant/50 input-ring pr-10"
+                            >
+                            <div id="nikCheckIcon" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-emerald-600 hidden">
+                                <span class="material-symbols-outlined text-lg">check_circle</span>
+                            </div>
+                        </div>
+
+                        <p id="nikHelpText" class="text-xs text-slate-500 flex items-center gap-1.5 mt-1">
+                            <span class="material-symbols-outlined text-[15px] text-primary shrink-0">info</span>
+                            <span>NIK harus tepat 16 digit angka (sesuai e-KTP / KK)</span>
+                        </p>
 
                     </div>
 
@@ -704,10 +722,67 @@ function hideToastNotification() {
     }, 300);
 }
 
+function handleNikInput(el) {
+    if (!el) return;
+    el.value = el.value.replace(/[^0-9]/g, '');
+    if (el.value.length > 16) {
+        el.value = el.value.slice(0, 16);
+    }
+    const len = el.value.length;
+    const counter = document.getElementById('nikCounter');
+    const icon = document.getElementById('nikCheckIcon');
+    const help = document.getElementById('nikHelpText');
+
+    if (counter) {
+        if (len === 0) {
+            counter.textContent = '0 / 16 digit';
+            counter.className = 'text-[11px] font-medium text-slate-400 font-mono';
+        } else if (len < 16) {
+            counter.textContent = `${len} / 16 digit (kurang ${16 - len})`;
+            counter.className = 'text-[11px] font-semibold text-amber-600 font-mono';
+        } else {
+            counter.textContent = '16 / 16 digit (Lengkap)';
+            counter.className = 'text-[11px] font-bold text-emerald-600 font-mono';
+        }
+    }
+
+    if (icon) {
+        if (len === 16) {
+            icon.classList.remove('hidden');
+        } else {
+            icon.classList.add('hidden');
+        }
+    }
+
+    if (help) {
+        if (len === 0) {
+            help.innerHTML = `
+                <span class="material-symbols-outlined text-[15px] text-primary shrink-0">info</span>
+                <span>NIK harus tepat 16 digit angka (sesuai e-KTP / KK)</span>
+            `;
+        } else if (len < 16) {
+            help.innerHTML = `
+                <span class="material-symbols-outlined text-[15px] text-amber-500 shrink-0">warning</span>
+                <span class="text-amber-600 font-medium">NIK harus tepat 16 digit. Masih kurang ${16 - len} digit lagi.</span>
+            `;
+        } else {
+            help.innerHTML = `
+                <span class="material-symbols-outlined text-[15px] text-emerald-600 shrink-0">check_circle</span>
+                <span class="text-emerald-700 font-medium">Format NIK sudah tepat 16 digit angka.</span>
+            `;
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const form = document.getElementById('formPendaftaran');
     const button = document.getElementById('btnSimpan');
+    const nikInput = document.getElementById('nik');
+
+    if (nikInput && nikInput.value) {
+        handleNikInput(nikInput);
+    }
 
     if (!form) {
         return;
@@ -716,6 +791,20 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', async function (event) {
 
         event.preventDefault();
+
+        // Validasi NIK harus tepat 16 digit sebelum submit
+        const nikEl = document.getElementById('nik');
+        const nikVal = nikEl ? nikEl.value.trim() : '';
+        if (nikVal.length !== 16) {
+            showErrorToast(
+                'NIK Harus Tepat 16 Digit',
+                nikVal.length < 16
+                    ? `NIK harus tepat 16 digit angka. Anda baru memasukkan ${nikVal.length} digit (kurang ${16 - nikVal.length} digit).`
+                    : 'NIK tidak boleh lebih dari 16 digit angka.'
+            );
+            if (nikEl) nikEl.focus();
+            return;
+        }
 
         button.disabled = true;
         button.innerText = 'Menyimpan...';
@@ -752,8 +841,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     data.id_pasien
                 );
 
-                // Kosongkan form
+                // Kosongkan form & reset counter NIK
                 form.reset();
+                handleNikInput(document.getElementById('nik'));
 
                 // Scroll halus ke atas agar notifikasi terlihat jelas
                 window.scrollTo({ top: 0, behavior: 'smooth' });

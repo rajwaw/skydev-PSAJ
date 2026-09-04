@@ -210,12 +210,21 @@
                     </div>
 
                     <div class="flex justify-end gap-4 pt-5 mt-5 border-t border-outline-variant">
-                        <button type="reset" class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-colors">Batal</button>
-                        <button type="submit" id="btnSimpanEvaluasi" class="px-6 py-2.5 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:bg-[#005a3c] transition-colors shadow-sm flex items-center gap-2">
-                            <span class="material-symbols-outlined text-base">save</span>
-                            Simpan Evaluasi
-                        </button>
-                    </div>
+         <button 
+        type="reset" 
+        class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-colors">
+        Batal
+    </button>
+
+    <button 
+        type="submit" 
+        id="btnSimpanEvaluasi" 
+        class="px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-[#005a3c] transition-colors shadow-sm flex items-center gap-2">
+        
+        <span class="material-symbols-outlined text-base">save</span>
+        Simpan Evaluasi
+    </button>
+</div>
                 </section>
             </form>
         </div>

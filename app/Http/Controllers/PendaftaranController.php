@@ -22,10 +22,10 @@ class PendaftaranController extends Controller
         ], [
             'nik.required' => 'NIK wajib diisi.',
             'nik.unique' => 'NIK sudah terdaftar dalam sistem. 1 NIK hanya berlaku untuk 1 pasien.',
+            'nik.digits' => 'NIK harus tepat 16 digit angka (tidak boleh kurang atau lebih).',
             'nama.required' => 'Nama lengkap wajib diisi.',
             'tanggal_lahir.required' => 'Tanggal lahir wajib diisi.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
-            'nik.digits' => 'NIK harus terdiri dari tepat 16 digit angka.',
             'nama.regex' => 'Nama lengkap hanya boleh berisi huruf dan spasi.',
             'telepon.required' => 'Nomor telepon wajib diisi.',
             'telepon.regex' => 'Nomor telepon hanya boleh berisi angka.',
