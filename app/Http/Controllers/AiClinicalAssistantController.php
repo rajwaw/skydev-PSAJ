@@ -60,7 +60,7 @@ class AiClinicalAssistantController extends Controller
             if (!$response->successful()) {
                 return response()->json([
                     'success' => false,
-                    'summary' => 'Gagal menghubungi AI. Silakan coba lagi (error ' . $response->status() . ').',
+                    'summary' => 'Gagal menghubungi AI. Silakan coba lagi.',
                 ]);
             }
 
@@ -75,7 +75,7 @@ class AiClinicalAssistantController extends Controller
             Log::error('Gemini API exception', ['message' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'summary' => 'Terjadi kesalahan saat menghubungi AI: ' . $e->getMessage(),
+                'summary' => 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.',
             ]);
         }
     }
@@ -262,7 +262,7 @@ class AiClinicalAssistantController extends Controller
             if (!$response->successful()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menghubungi AI (error ' . $response->status() . ').',
+                    'message' => 'Gagal menghubungi AI. Silakan coba lagi.',
                 ]);
             }
 
@@ -280,7 +280,7 @@ class AiClinicalAssistantController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Gemini Chat exception', ['message' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat memproses pesan. Silakan coba lagi.']);
         }
     }
 }
