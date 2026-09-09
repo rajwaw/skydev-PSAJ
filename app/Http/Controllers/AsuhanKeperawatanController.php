@@ -156,36 +156,52 @@ class AsuhanKeperawatanController extends Controller
             $pasien = Pasien::findOrFail($idPasien);
 
             // 1. Cari pendaftaran aktif pasien hari ini, atau buat baru jika belum ada
+            //    Sebuah pasien boleh punya beberapa kunjungan/kontrol dalam sehari.
+            //    Kunjungan yang sudah "Selesai" (sudah dibayar/lunas) dianggap riwayat,
+            //    sehingga kontrol berikutnya harus dibuatkan kunjungan baru (Pendaftaran + RekamMedis) terpisah.
             $pendaftaran = Pendaftaran::where('id_pasien', $idPasien)
                 ->whereDate('tgl_daftar', now()->toDateString())
+                ->where('status_kunjungan', '!=', 'Selesai')
                 ->orderByDesc('id_pendaftaran')
                 ->first();
 
+            $butuhKunjunganBaru = false;
+
             if (!$pendaftaran) {
-                // Ambil pendaftaran terakhir pasien atau buat pendaftaran baru hari ini
+                // Ambil pendaftaran terakhir pasien
                 $pendaftaranTerakhir = Pendaftaran::where('id_pasien', $idPasien)
                     ->orderByDesc('id_pendaftaran')
                     ->first();
 
-                if ($pendaftaranTerakhir && Carbon::parse($pendaftaranTerakhir->tgl_daftar)->isToday()) {
+                // Reuse hanya jika kunjungan terakhir hari ini masih aktif (belum selesai)
+                if ($pendaftaranTerakhir
+                    && Carbon::parse($pendaftaranTerakhir->tgl_daftar)->isToday()
+                    && strtolower((string) $pendaftaranTerakhir->status_kunjungan) !== 'selesai') {
                     $pendaftaran = $pendaftaranTerakhir;
                 } else {
-                    $antreanHariIni = Pendaftaran::whereDate('tgl_daftar', now()->toDateString())->count();
-                    $pendaftaran = Pendaftaran::create([
-                        'id_pasien' => $idPasien,
-                        'tgl_daftar' => now(),
-                        'no_antrean' => $antreanHariIni + 1,
-                        'status_kunjungan' => 'Sedang Diperiksa',
-                    ]);
+                    $butuhKunjunganBaru = true;
                 }
-            } else {
+            }
+
+            if ($butuhKunjunganBaru) {
+                $antreanHariIni = Pendaftaran::whereDate('tgl_daftar', now()->toDateString())->count();
+                $pendaftaran = Pendaftaran::create([
+                    'id_pasien' => $idPasien,
+                    'tgl_daftar' => now(),
+                    'no_antrean' => $antreanHariIni + 1,
+                    'status_kunjungan' => 'Sedang Diperiksa',
+                ]);
+            } elseif ($pendaftaran) {
                 $pendaftaran->update(['status_kunjungan' => 'Sedang Diperiksa']);
             }
 
-            // 2. Buat atau perbarui record rekam_medis untuk kunjungan ini
-            $rekamMedis = RekamMedis::where('id_pendaftaran', $pendaftaran->id_pendaftaran)
-                ->where('id_pasien', $idPasien)
-                ->first();
+            // 2. Buat atau perbarui record rekam_medis untuk kunjungan ini.
+            //    Untuk kunjungan baru, selalu buat RekamMedis baru agar setiap kontrol punya riwayat & pembayaran terpisah.
+            $rekamMedis = $butuhKunjunganBaru
+                ? null
+                : RekamMedis::where('id_pendaftaran', $pendaftaran->id_pendaftaran)
+                    ->where('id_pasien', $idPasien)
+                    ->first();
 
             if (!$rekamMedis) {
                 $rekamMedis = RekamMedis::create([

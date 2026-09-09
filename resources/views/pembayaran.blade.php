@@ -132,6 +132,7 @@
         <input type="hidden" name="biaya_tindakan" id="hidden_biaya_tindakan" value="{{ $existingPembayaran ? $existingPembayaran->biaya_tindakan : 0 }}">
         <input type="hidden" name="rincian_obat" id="hidden_rincian_obat" value="">
         <input type="hidden" name="rincian_tindakan" id="hidden_rincian_tindakan" value="">
+        <input type="hidden" id="hidden_status_bayar" value="{{ $existingPembayaran ? $existingPembayaran->status_bayar : '' }}">
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
 
@@ -908,6 +909,12 @@ function selectPasien(id) {
         const pem = data.pemeriksaan;
         const bayar = data.pembayaran;
 
+        // Set status pembayaran untuk guard "sudah lunas"
+        const statusBayar = (bayar && bayar.status_bayar) ? String(bayar.status_bayar).toLowerCase() : '';
+        const sudahLunas = ['lunas', 'selesai'].includes(statusBayar);
+        document.getElementById('hidden_status_bayar').value = sudahLunas ? 'lunas' : '';
+        setStatusLunasUI(sudahLunas);
+
         // 1. Update Card Info Pasien
         document.getElementById('cardAvatar').textContent  = p.initials;
         document.getElementById('cardNama').textContent    = p.nama_lengkap;
@@ -1192,12 +1199,33 @@ function setQuickCash(amount) {
 }
 
 // ================= SIMPAN PEMBAYARAN VIA AJAX =================
+function setStatusLunasUI(sudahLunas) {
+    const btn = document.getElementById('btnSimpanPembayaran');
+    if (!btn) return;
+
+    if (sudahLunas) {
+        btn.disabled = true;
+        btn.classList.add('opacity-60', 'cursor-not-allowed');
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">verified</span><span>Sudah Lunas</span>';
+    } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-60', 'cursor-not-allowed');
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">payments</span><span>Simpan & Selesaikan Pembayaran</span>';
+    }
+}
+
 function submitPembayaran(e) {
     e.preventDefault();
 
     const idPasien = document.getElementById('hidden_id_pasien').value;
     if (!idPasien) {
         showToast('Pilih Pasien Terlebih Dahulu', 'Silakan pilih pasien dari daftar sebelum menyimpan transaksi.', 'warning');
+        return;
+    }
+
+    const statusBayar = document.getElementById('hidden_status_bayar').value.toLowerCase();
+    if (['lunas', 'selesai'].includes(statusBayar)) {
+        showToast('Pembayaran Sudah Lunas', 'Pasien ini telah melunasi pembayaran. Tidak dapat diproses ulang.', 'warning');
         return;
     }
 
@@ -1264,6 +1292,9 @@ function submitPembayaran(e) {
             }, 2500);
 
         } else {
+            if (data.message && /lunas|melunasi|sudah bayar|telah melunasi/i.test(data.message)) {
+                setStatusLunasUI(true);
+            }
             showToast('Gagal Menyimpan', data.message || 'Terjadi kesalahan saat menyimpan pembayaran.', 'error');
         }
     })
