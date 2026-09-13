@@ -138,7 +138,7 @@
     </style>
 </head>
 
-<body class="bg-background min-h-screen flex flex-col md:flex-row text-on-surface antialiased overflow-x-hidden">
+<body class="bg-background min-h-screen flex flex-col md:flex-row text-on-surface antialiased overflow-x-clip">
 
     <!-- MOBILE SIDEBAR OVERLAY -->
     <div

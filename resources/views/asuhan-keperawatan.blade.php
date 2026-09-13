@@ -82,7 +82,7 @@
     </div>
 
     <!-- Main Grid -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         <!-- LEFT COLUMN (FORM ASUHAN) -->
         <div class="xl:col-span-2 flex flex-col gap-6">
@@ -360,8 +360,8 @@
                                 id="inputTD"
                                 type="text"
                                 name="tekanan_darah"
-                                value="{{ $latestAsuhan ? $latestAsuhan->tekanan_darah : '120/80' }}"
-                                placeholder="120/80"
+                                value="{{ $latestAsuhan ? $latestAsuhan->tekanan_darah : '' }}"
+                                placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
 
@@ -374,8 +374,8 @@
                                 id="inputNadi"
                                 type="number"
                                 name="nadi"
-                                value="{{ $latestAsuhan ? $latestAsuhan->nadi : '80' }}"
-                                placeholder="80"
+                                value="{{ $latestAsuhan ? $latestAsuhan->nadi : '' }}"
+                                placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
 
@@ -389,8 +389,8 @@
                                 type="number"
                                 step="0.1"
                                 name="suhu_tubuh"
-                                value="{{ $latestAsuhan ? $latestAsuhan->suhu_tubuh : '36.5' }}"
-                                placeholder="36.5"
+                                value="{{ $latestAsuhan ? $latestAsuhan->suhu_tubuh : '' }}"
+                                placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
 
@@ -403,8 +403,8 @@
                                 id="inputRR"
                                 type="number"
                                 name="rr"
-                                value="{{ $latestAsuhan ? $latestAsuhan->rr : '20' }}"
-                                placeholder="20"
+                                value="{{ $latestAsuhan ? $latestAsuhan->rr : '' }}"
+                                placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
 
@@ -417,8 +417,8 @@
                                 id="inputSpO2"
                                 type="number"
                                 name="spo2"
-                                value="{{ $latestAsuhan ? $latestAsuhan->spo2 : '98' }}"
-                                placeholder="98"
+                                value="{{ $latestAsuhan ? $latestAsuhan->spo2 : '' }}"
+                                placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
                     </div>
@@ -537,32 +537,13 @@
                                             1
                                         </td>
                                         <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[0][tindakan]" value="Monitor tanda vital secara berkala" placeholder="Deskripsi rencana tindakan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            <input type="text" name="rencana_tindakan[0][tindakan]" value="" placeholder="Deskripsi rencana tindakan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
                                         </td>
                                         <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[0][target]" value="Tanda vital stabil" placeholder="Target hasil..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            <input type="text" name="rencana_tindakan[0][target]" value="" placeholder="Target hasil..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
                                         </td>
                                         <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[0][keterangan]" value="Rutin" placeholder="Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
-                                        </td>
-                                        <td class="py-2.5 px-4 text-center">
-                                            <button type="button" onclick="hapusBarisRencana(this)" class="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Hapus Tindakan">
-                                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-surface-container-low transition-colors rencana-row">
-                                        <td class="py-3 px-4 text-center font-semibold text-on-surface-variant row-number">
-                                            2
-                                        </td>
-                                        <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[1][tindakan]" value="Observasi keluhan dan respon terapi" placeholder="Deskripsi rencana tindakan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
-                                        </td>
-                                        <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[1][target]" value="Keluhan berkurang" placeholder="Target hasil..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
-                                        </td>
-                                        <td class="py-2.5 px-4">
-                                            <input type="text" name="rencana_tindakan[1][keterangan]" value="Evaluasi berkala" placeholder="Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            <input type="text" name="rencana_tindakan[0][keterangan]" value="" placeholder="Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
                                         </td>
                                         <td class="py-2.5 px-4 text-center">
                                             <button type="button" onclick="hapusBarisRencana(this)" class="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Hapus Tindakan">
@@ -582,8 +563,8 @@
         <!-- ===================================== -->
         <!-- RIGHT COLUMN (RINGKASAN & ACTION) -->
         <!-- ===================================== -->
-        <div class="xl:col-span-1">
-            <div class="sticky top-6 flex flex-col gap-5">
+        <div class="xl:col-span-1 h-full">
+            <div class="xl:sticky xl:top-20 flex flex-col gap-5 z-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-1">
 
                 <!-- RINGKASAN DOKUMEN -->
                 <div class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow">
@@ -614,7 +595,7 @@
                         <div>
                             <p class="text-xs text-on-surface-variant font-medium">Jumlah Rencana Asuhan</p>
                             <p id="summaryJumlahRencana" class="text-sm font-semibold text-on-surface mt-0.5">
-                                {{ $latestIntervensi->count() ?: 2 }} Tindakan
+                                {{ $latestIntervensi->count() ?: 1 }} Tindakan
                             </p>
                         </div>
 
@@ -853,21 +834,21 @@ function selectPasienById(id) {
             document.getElementById('inputRiwayatKeluhan').value = asuhan.riwayat_keluhan || '';
             document.getElementById('inputKondisiUmum').value = asuhan.kondisi_umum || 'Baik';
             document.getElementById('inputKesadaran').value = asuhan.kesadaran || 'Compos Mentis';
-            document.getElementById('inputTD').value = asuhan.tekanan_darah || '120/80';
-            document.getElementById('inputNadi').value = asuhan.nadi || '80';
-            document.getElementById('inputSuhu').value = asuhan.suhu_tubuh || '36.5';
-            document.getElementById('inputRR').value = asuhan.rr || '20';
-            document.getElementById('inputSpO2').value = asuhan.spo2 || '98';
+            document.getElementById('inputTD').value = asuhan.tekanan_darah || '';
+            document.getElementById('inputNadi').value = asuhan.nadi || '';
+            document.getElementById('inputSuhu').value = asuhan.suhu_tubuh || '';
+            document.getElementById('inputRR').value = asuhan.rr || '';
+            document.getElementById('inputSpO2').value = asuhan.spo2 || '';
         } else {
             document.getElementById('inputKeluhanUtama').value = '';
             document.getElementById('inputRiwayatKeluhan').value = '';
             document.getElementById('inputKondisiUmum').value = 'Baik';
             document.getElementById('inputKesadaran').value = 'Compos Mentis';
-            document.getElementById('inputTD').value = '120/80';
-            document.getElementById('inputNadi').value = '80';
-            document.getElementById('inputSuhu').value = '36.5';
-            document.getElementById('inputRR').value = '20';
-            document.getElementById('inputSpO2').value = '98';
+            document.getElementById('inputTD').value = '';
+            document.getElementById('inputNadi').value = '';
+            document.getElementById('inputSuhu').value = '';
+            document.getElementById('inputRR').value = '';
+            document.getElementById('inputSpO2').value = '';
         }
 
         // 6. Prefill Diagnosis & Intervensi
@@ -885,8 +866,7 @@ function selectPasienById(id) {
                 tambahBarisRencanaWithData(idx, item.rencana_tindakan, item.target, item.keterangan);
             });
         } else {
-            tambahBarisRencanaWithData(0, 'Monitor tanda vital secara berkala', 'Tanda vital stabil', 'Rutin');
-            tambahBarisRencanaWithData(1, 'Observasi keluhan dan respon terapi', 'Keluhan berkurang', 'Evaluasi berkala');
+            tambahBarisRencanaWithData(0, '', '', '');
         }
 
         updateRencanaCounter();
@@ -1040,9 +1020,18 @@ function resetFormAsuhan() {
     if (confirm('Apakah Anda yakin ingin mengosongkan input form?')) {
         document.getElementById('inputKeluhanUtama').value = '';
         document.getElementById('inputRiwayatKeluhan').value = '';
+        document.getElementById('inputTD').value = '';
+        document.getElementById('inputNadi').value = '';
+        document.getElementById('inputSuhu').value = '';
+        document.getElementById('inputRR').value = '';
+        document.getElementById('inputSpO2').value = '';
         document.getElementById('inputDiagnosaAwal').value = '';
         document.getElementById('inputFaktorTerkait').value = '';
         document.getElementById('inputPrioritasDiagnosa').value = '';
+        const tbody = document.getElementById('rencanaTbody');
+        tbody.innerHTML = '';
+        tambahBarisRencanaWithData(0, '', '', '');
+        updateRencanaCounter();
     }
 }
 </script>

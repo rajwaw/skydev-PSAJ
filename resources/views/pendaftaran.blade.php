@@ -73,75 +73,13 @@
         </h1>
 
         <p class="text-sm sm:text-base text-on-surface-variant mt-1">
-            Daftarkan pasien baru atau cari pasien yang sudah terdaftar.
+            Daftarkan pasien untuk membuat antrean kunjungan baru.
         </p>
     </div>
 
 
     {{-- ============================= --}}
-    {{-- PILIHAN PASIEN --}}
-    {{-- ============================= --}}
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-
-        {{-- PASIEN BARU --}}
-        <div class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow flex flex-col items-start hover:border-primary transition-colors">
-
-            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-3 sm:mb-4">
-                <span class="material-symbols-outlined text-2xl">
-                    person_add
-                </span>
-            </div>
-
-            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-1 sm:mb-2">
-                Pasien Baru
-            </h3>
-
-            <p class="text-xs sm:text-sm text-on-surface-variant mb-5 sm:mb-6">
-                Daftarkan pasien yang belum memiliki data.
-            </p>
-
-            <a
-                href="#form-pendaftaran"
-                class="bg-primary text-white font-semibold py-2.5 sm:py-3 px-6 rounded-lg w-full text-center hover:bg-[#005a3c] transition-colors text-sm mt-auto shadow-sm"
-            >
-                Pasien Baru
-            </a>
-
-        </div>
-
-
-        {{-- PASIEN LAMA --}}
-        <div class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow flex flex-col items-start hover:border-secondary transition-colors">
-
-            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-secondary mb-3 sm:mb-4">
-                <span class="material-symbols-outlined text-2xl">
-                    search
-                </span>
-            </div>
-
-            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-1 sm:mb-2">
-                Pasien Lama
-            </h3>
-
-            <p class="text-xs sm:text-sm text-on-surface-variant mb-5 sm:mb-6">
-                Cari pasien yang sudah terdaftar.
-            </p>
-
-            <a
-                href="#cari-pasien"
-                class="bg-transparent text-secondary border border-secondary font-semibold py-2.5 sm:py-3 px-6 rounded-lg w-full text-center hover:bg-secondary hover:text-white transition-colors text-sm mt-auto"
-            >
-                Cari Pasien
-            </a>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================= --}}
-    {{-- FORM PASIEN BARU --}}
+    {{-- FORM PENDAFTARAN PASIEN --}}
     {{-- ============================= --}}
 
     <div
@@ -467,124 +405,6 @@
                 </div>
 
             </form>
-
-        </div>
-
-    </div>
-
-
-    {{-- ============================= --}}
-    {{-- CARI PASIEN LAMA --}}
-    {{-- ============================= --}}
-
-    <div
-        id="cari-pasien"
-        class="bg-white rounded-xl border border-outline-variant card-shadow overflow-hidden"
-    >
-
-        <div class="p-4 sm:p-6 border-b border-outline-variant">
-
-            <h3 class="text-lg sm:text-xl font-semibold text-on-surface mb-3 sm:mb-4">
-                Cari Pasien Lama
-            </h3>
-
-            <form
-                action="{{ route('pasien') }}"
-                method="GET"
-            >
-
-                <div class="relative flex flex-col sm:flex-row gap-2">
-
-                    <div class="relative flex-1">
-                        <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">
-                            search
-                        </span>
-
-                        <input
-                            type="text"
-                            name="search"
-                            value="{{ request('search') }}"
-                            placeholder="Cari berdasarkan nama, NIK, atau nomor telepon..."
-                            class="w-full bg-surface border border-outline-variant rounded-xl pl-10 pr-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 input-ring"
-                        >
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#005a3c] transition-colors shadow-sm flex items-center justify-center gap-1.5 shrink-0"
-                    >
-                        <span class="material-symbols-outlined text-sm">search</span>
-                        Cari
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-
-        {{-- HASIL PENCARIAN --}}
-        <div class="divide-y divide-outline-variant">
-
-            @if(isset($pasien) && $pasien->count() > 0)
-
-                @foreach($pasien as $item)
-
-                    <div class="p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors">
-
-                        <div class="flex items-center gap-4">
-
-                            <div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface font-bold text-sm">
-                                {{ strtoupper(substr($item->nama_lengkap, 0, 2)) }}
-                            </div>
-
-                            <div>
-
-                                <h4 class="text-sm font-semibold text-on-surface">
-                                    {{ $item->nama_lengkap }}
-                                </h4>
-
-                                <p class="text-xs text-on-surface-variant">
-                                    NIK:
-                                    {{ $item->nik }}
-
-                                    <span class="mx-2">
-                                        •
-                                    </span>
-
-                                    Telepon:
-                                    {{ $item->no_telp ?? '-' }}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <a
-                            href="{{ route('rekam-medis', ['id_pasien' => $item->id_pasien]) }}"
-                            class="bg-transparent text-secondary border border-secondary text-xs py-1.5 px-4 rounded-md hover:bg-secondary hover:text-white transition-colors font-semibold"
-                        >
-                            Pilih
-                        </a>
-
-                    </div>
-
-                @endforeach
-
-            @elseif(request('search'))
-
-                <div class="p-8 text-center text-sm text-on-surface-variant">
-                    Pasien tidak ditemukan.
-                </div>
-
-            @else
-
-                <div class="p-8 text-center text-sm text-on-surface-variant">
-                    Silakan cari pasien berdasarkan nama, NIK, atau nomor telepon.
-                </div>
-
-            @endif
 
         </div>
 

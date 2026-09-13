@@ -58,7 +58,7 @@ class AsuhanKeperawatanController extends Controller
         $latestIntervensi = $latestRekamMedis ? $latestRekamMedis->intervensi : collect();
 
         // Hitung statistik untuk informasi kartu ringkasan
-        $totalTindakan = $latestIntervensi->count() ?: 2;
+        $totalTindakan = $latestIntervensi->count() ?: 1;
 
         return view('asuhan-keperawatan', compact(
             'daftarPasien',
@@ -205,11 +205,11 @@ class AsuhanKeperawatanController extends Controller
                     'riwayat_keluhan' => $request->riwayat_keluhan,
                     'kondisi_umum' => $request->kondisi_umum ?: 'Baik',
                     'kesadaran' => $request->kesadaran ?: 'Compos Mentis',
-                    'tekanan_darah' => $request->tekanan_darah ?: '120/80',
-                    'nadi' => $request->nadi ?: 80,
-                    'suhu_tubuh' => $request->suhu_tubuh ?: 36.5,
-                    'rr' => $request->rr ?: 20,
-                    'spo2' => $request->spo2 ?: 98,
+                    'tekanan_darah' => $request->tekanan_darah,
+                    'nadi' => $request->nadi,
+                    'suhu_tubuh' => $request->suhu_tubuh,
+                    'rr' => $request->rr,
+                    'spo2' => $request->spo2,
                 ]
             );
 
@@ -218,6 +218,7 @@ class AsuhanKeperawatanController extends Controller
             Intervensi::where('id_rekam_medis', $rekamMedis->id_rekam_medis)->delete();
 
             $rencanaList = $request->rencana_tindakan;
+            $hasCreatedIntervensi = false;
             if (!empty($rencanaList) && is_array($rencanaList)) {
                 foreach ($rencanaList as $item) {
                     if (!empty($item['tindakan'])) {
@@ -227,21 +228,23 @@ class AsuhanKeperawatanController extends Controller
                             'faktor_terkait' => $request->faktor_terkait,
                             'prioritas_diagnosa' => $request->prioritas_diagnosa,
                             'rencana_tindakan' => $item['tindakan'],
-                            'target' => $item['target'] ?? '-',
-                            'keterangan' => $item['keterangan'] ?? '-',
+                            'target' => $item['target'] ?? null,
+                            'keterangan' => $item['keterangan'] ?? null,
                         ]);
+                        $hasCreatedIntervensi = true;
                     }
                 }
-            } else {
-                // Fallback default intervensi jika tidak ada baris tabel rencana
+            }
+
+            if (!$hasCreatedIntervensi && ($request->diagnosa_awal || $request->faktor_terkait || $request->prioritas_diagnosa)) {
                 Intervensi::create([
                     'id_rekam_medis' => $rekamMedis->id_rekam_medis,
                     'diagnosa_awal' => $request->diagnosa_awal ?: $request->keluhan_utama,
                     'faktor_terkait' => $request->faktor_terkait,
                     'prioritas_diagnosa' => $request->prioritas_diagnosa,
-                    'rencana_tindakan' => 'Monitor tanda vital secara berkala',
-                    'target' => 'Kondisi pasien stabil',
-                    'keterangan' => 'Rutin',
+                    'rencana_tindakan' => null,
+                    'target' => null,
+                    'keterangan' => null,
                 ]);
             }
 
