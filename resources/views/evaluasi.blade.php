@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div class="xl:col-span-2 flex flex-col gap-6">
             {{-- 1. PILIH PASIEN --}}
             <section class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 shadow-sm">
@@ -230,43 +230,44 @@
         </div>
 
         {{-- RIGHT COLUMN --}}
-        <div class="xl:col-span-1 flex flex-col gap-6">
-            <section class="bg-white rounded-xl border border-outline-variant p-5 shadow-sm">
-                <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wide mb-3">Info Pasien Terpilih</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-on-surface-variant">Nama</span>
-                        <span id="infoNama" class="text-xs font-semibold text-on-surface text-right max-w-[60%]">{{ $selectedPasien ? $selectedPasien->nama_lengkap : '-' }}</span>
+        <div class="xl:col-span-1 h-full">
+            <div class="xl:sticky xl:top-20 flex flex-col gap-6 z-20 max-h-[calc(100vh-6rem)] overflow-hidden">
+                <section class="bg-white rounded-xl border border-outline-variant p-5 shadow-sm shrink-0">
+                    <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wide mb-3">Info Pasien Terpilih</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-on-surface-variant">Nama</span>
+                            <span id="infoNama" class="text-xs font-semibold text-on-surface text-right max-w-[60%]">{{ $selectedPasien ? $selectedPasien->nama_lengkap : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-on-surface-variant">No. RM</span>
+                            <span id="infoRM" class="text-xs font-semibold text-primary">{{ $selectedPasien ? $selectedPasien->no_rm : '-' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-on-surface-variant">Kunjungan</span>
+                            <span id="infoKunjungan" class="text-xs font-semibold text-on-surface">
+                                @if($selectedPasien && $selectedPasien->pendaftaranTerbaru)
+                                    {{ \Carbon\Carbon::parse($selectedPasien->pendaftaranTerbaru->tgl_daftar)->translatedFormat('d M Y') }}
+                                @else
+                                    -
+                                @endif
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-on-surface-variant">Status</span>
+                            <span id="infoBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? 'bg-amber-100 text-amber-800' : 'bg-surface-container text-on-surface-variant' }}">
+                                {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? $selectedPasien->pendaftaranTerbaru->status_kunjungan : '-' }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-on-surface-variant">No. RM</span>
-                        <span id="infoRM" class="text-xs font-semibold text-primary">{{ $selectedPasien ? $selectedPasien->no_rm : '-' }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-on-surface-variant">Kunjungan</span>
-                        <span id="infoKunjungan" class="text-xs font-semibold text-on-surface">
-                            @if($selectedPasien && $selectedPasien->pendaftaranTerbaru)
-                                {{ \Carbon\Carbon::parse($selectedPasien->pendaftaranTerbaru->tgl_daftar)->translatedFormat('d M Y') }}
-                            @else
-                                -
-                            @endif
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs text-on-surface-variant">Status</span>
-                        <span id="infoBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? 'bg-amber-100 text-amber-800' : 'bg-surface-container text-on-surface-variant' }}">
-                            {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? $selectedPasien->pendaftaranTerbaru->status_kunjungan : '-' }}
-                        </span>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-outline-variant">
-                    <h3 class="text-lg font-bold text-on-surface">Riwayat Evaluasi</h3>
-                    <p class="text-xs text-on-surface-variant mt-0.5">30 evaluasi terakhir semua pasien</p>
-                </div>
-                <div class="divide-y divide-outline-variant max-h-[520px] overflow-y-auto">
+                <section class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+                    <div class="p-5 border-b border-outline-variant shrink-0">
+                        <h3 class="text-lg font-bold text-on-surface">Riwayat Evaluasi</h3>
+                        <p class="text-xs text-on-surface-variant mt-0.5">30 evaluasi terakhir semua pasien</p>
+                    </div>
+                    <div class="divide-y divide-outline-variant overflow-y-auto flex-1">
                     @forelse($riwayatEvaluasi as $rm)
                         @php
                             $ev = $rm->evaluasi;
@@ -304,6 +305,7 @@
                     @endforelse
                 </div>
             </section>
+            </div>
         </div>
     </div>
 </div>
