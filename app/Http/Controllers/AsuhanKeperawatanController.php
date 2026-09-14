@@ -7,6 +7,7 @@ use App\Models\Pendaftaran;
 use App\Models\RekamMedis;
 use App\Models\AsuhanMedis;
 use App\Models\Intervensi;
+use App\Models\Implementasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class AsuhanKeperawatanController extends Controller
         $selectedPasien = null;
         if ($selectedId) {
             $selectedPasien = Pasien::with(['pendaftaranTerbaru', 'rekamMedis' => function ($q) {
-                $q->with(['asuhanMedis', 'intervensi'])->orderByDesc('tgl_pemeriksaan');
+                $q->with(['asuhanMedis', 'intervensi', 'implementasi'])->orderByDesc('tgl_pemeriksaan');
             }, 'alergis'])->find($selectedId);
         }
 
@@ -56,6 +57,7 @@ class AsuhanKeperawatanController extends Controller
         $latestRekamMedis = $selectedPasien ? $selectedPasien->rekamMedis->first() : null;
         $latestAsuhan = $latestRekamMedis ? $latestRekamMedis->asuhanMedis : null;
         $latestIntervensi = $latestRekamMedis ? $latestRekamMedis->intervensi : collect();
+        $latestImplementasi = $latestRekamMedis ? $latestRekamMedis->implementasi : null;
 
         // Hitung statistik untuk informasi kartu ringkasan
         $totalTindakan = $latestIntervensi->count() ?: 1;
@@ -66,6 +68,7 @@ class AsuhanKeperawatanController extends Controller
             'latestRekamMedis',
             'latestAsuhan',
             'latestIntervensi',
+            'latestImplementasi',
             'totalTindakan',
             'search'
         ));
@@ -79,7 +82,7 @@ class AsuhanKeperawatanController extends Controller
         $pasien = Pasien::with([
             'pendaftaranTerbaru',
             'rekamMedis' => function ($q) {
-                $q->with(['asuhanMedis', 'intervensi'])->orderByDesc('tgl_pemeriksaan');
+                $q->with(['asuhanMedis', 'intervensi', 'implementasi'])->orderByDesc('tgl_pemeriksaan');
             },
             'alergis'
         ])->find($id);
@@ -94,6 +97,7 @@ class AsuhanKeperawatanController extends Controller
         $latestRekam = $pasien->rekamMedis->first();
         $latestAsuhan = $latestRekam ? $latestRekam->asuhanMedis : null;
         $latestIntervensi = $latestRekam ? $latestRekam->intervensi : [];
+        $latestImplementasi = $latestRekam ? $latestRekam->implementasi : null;
         $latestPendaftaran = $pasien->pendaftaranTerbaru;
 
         $alergiText = $pasien->alergis->isNotEmpty() 
@@ -121,6 +125,14 @@ class AsuhanKeperawatanController extends Controller
             ],
             'asuhan' => $latestAsuhan,
             'intervensi' => $latestIntervensi,
+            'implementasi' => $latestImplementasi ? [
+                'id_implementasi'    => $latestImplementasi->id_implementasi,
+                'tindakan_dilakukan' => $latestImplementasi->tindakan_dilakukan,
+                'resep_obat'         => $latestImplementasi->resep_obat,
+            ] : null,
+            'terakhir_update' => ($latestAsuhan && $latestAsuhan->updated_at)
+                ? Carbon::parse($latestAsuhan->updated_at)->timezone('Asia/Jakarta')->translatedFormat('H:i')
+                : null,
         ]);
     }
 
@@ -147,6 +159,8 @@ class AsuhanKeperawatanController extends Controller
             'rencana_tindakan.*.tindakan' => 'nullable|string',
             'rencana_tindakan.*.target' => 'nullable|string',
             'rencana_tindakan.*.keterangan' => 'nullable|string',
+            'tindakan_dilakukan' => 'nullable|string',
+            'resep_obat' => 'nullable|string',
         ]);
 
         try {
@@ -246,6 +260,17 @@ class AsuhanKeperawatanController extends Controller
                     'target' => null,
                     'keterangan' => null,
                 ]);
+            }
+
+            // 5. Simpan / perbarui Implementasi (Tindakan yang Dilakukan & Resep Obat)
+            if ($request->filled('tindakan_dilakukan') || $request->filled('resep_obat') || Implementasi::where('id_rekam_medis', $rekamMedis->id_rekam_medis)->exists()) {
+                Implementasi::updateOrCreate(
+                    ['id_rekam_medis' => $rekamMedis->id_rekam_medis],
+                    [
+                        'tindakan_dilakukan' => $request->tindakan_dilakukan,
+                        'resep_obat'         => $request->resep_obat,
+                    ]
+                );
             }
 
             DB::commit();

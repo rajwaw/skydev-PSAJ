@@ -159,7 +159,7 @@ class EvaluasiController extends Controller
         $request->validate([
             'id_pasien'                => 'required|exists:pasien,id_pasien',
             'id_rekam_medis'           => 'required|exists:rekam_medis,id_rekam_medis',
-            'tindakan_dilakukan'       => 'required|string',
+            'tindakan_dilakukan'       => 'nullable|string',
             'resep_obat'               => 'nullable|string',
             'status_kondisi'           => 'required|string|max:50',
             'status_evaluasi'          => 'required|string|max:50',
@@ -172,14 +172,16 @@ class EvaluasiController extends Controller
         try {
             $pasien = Pasien::findOrFail($request->id_pasien);
 
-            // Simpan / update Implementasi
-            Implementasi::updateOrCreate(
-                ['id_rekam_medis' => $request->id_rekam_medis],
-                [
-                    'tindakan_dilakukan' => $request->tindakan_dilakukan,
-                    'resep_obat'         => $request->resep_obat,
-                ]
-            );
+            // Simpan / update Implementasi jika ada data tindakan/resep dikirim
+            if ($request->filled('tindakan_dilakukan') || $request->filled('resep_obat')) {
+                Implementasi::updateOrCreate(
+                    ['id_rekam_medis' => $request->id_rekam_medis],
+                    [
+                        'tindakan_dilakukan' => $request->tindakan_dilakukan,
+                        'resep_obat'         => $request->resep_obat,
+                    ]
+                );
+            }
 
             // Simpan / update Evaluasi
             Evaluasi::updateOrCreate(
@@ -205,12 +207,12 @@ class EvaluasiController extends Controller
             if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Evaluasi & Tindakan untuk pasien ' . $pasien->nama_lengkap . ' berhasil disimpan!',
+                    'message' => 'Evaluasi untuk pasien ' . $pasien->nama_lengkap . ' berhasil disimpan!',
                 ]);
             }
 
             return redirect()->route('evaluasi', ['pasien_id' => $request->id_pasien])
-                ->with('success', 'Evaluasi & Tindakan untuk pasien ' . $pasien->nama_lengkap . ' berhasil disimpan!');
+                ->with('success', 'Evaluasi untuk pasien ' . $pasien->nama_lengkap . ' berhasil disimpan!');
 
         } catch (\Exception $e) {
             if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {

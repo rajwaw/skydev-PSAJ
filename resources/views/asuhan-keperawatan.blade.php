@@ -57,6 +57,41 @@
     </div>
 </div>
 
+{{-- ========================================================== --}}
+{{-- MODAL KONFIRMASI BERSIHKAN FORM --}}
+{{-- ========================================================== --}}
+<div id="resetModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm hidden transition-opacity duration-200">
+    <div class="bg-white rounded-2xl border border-outline-variant shadow-2xl max-w-md w-full p-6 relative transform transition-all scale-95 duration-200" id="resetModalContent">
+        <!-- Close button -->
+        <button type="button" onclick="closeResetModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container transition-colors" title="Tutup">
+            <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+
+        <!-- Warning Icon Badge -->
+        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4 shadow-sm">
+            <span class="material-symbols-outlined text-2xl font-bold">restart_alt</span>
+        </div>
+
+        <!-- Modal Text -->
+        <h3 class="text-lg sm:text-xl font-bold text-on-surface mb-2">Bersihkan Input Form?</h3>
+        <p class="text-sm text-on-surface-variant mb-6 leading-relaxed">
+            Apakah Anda yakin ingin mengosongkan seluruh kolom isian pada form asuhan keperawatan ini?
+            <span class="block mt-1.5 text-xs text-red-500 font-medium">Semua data pengkajian, diagnosis, rencana tindakan, dan implementasi yang belum disimpan akan direset.</span>
+        </p>
+
+        <!-- Modal Action Buttons -->
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3">
+            <button type="button" onclick="closeResetModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container-low transition-colors">
+                Batal
+            </button>
+            <button type="button" id="btnConfirmReset" onclick="confirmResetFormAsuhan()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors shadow-sm flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-base">restart_alt</span>
+                <span>Ya, Bersihkan Form</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="p-4 sm:p-6 md:p-8 lg:p-10 w-full max-w-7xl mx-auto flex-1 flex flex-col gap-6">
 
     <!-- Page Header -->
@@ -556,6 +591,49 @@
                         </table>
                     </div>
                 </section>
+
+                <!-- ===================================== -->
+                <!-- 6. TINDAKAN YANG DILAKUKAN (IMPLEMENTASI) -->
+                <!-- ===================================== -->
+                <section class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow mt-6">
+                    <div class="flex items-center justify-between mb-5 pb-3 border-b border-outline-variant/60">
+                        <div>
+                            <h3 class="text-lg sm:text-xl font-bold text-on-surface flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">6</span>
+                                Tindakan yang Dilakukan (Implementasi)
+                            </h3>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Catat tindakan keperawatan yang telah dilaksanakan serta resep / pemberian obat untuk pasien.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Tindakan Keperawatan -->
+                        <div>
+                            <label for="inputTindakanDilakukan" class="block text-sm font-semibold text-on-surface mb-2">
+                                Tindakan Keperawatan
+                            </label>
+                            <textarea
+                                id="inputTindakanDilakukan"
+                                name="tindakan_dilakukan"
+                                placeholder="Masukkan detail tindakan keperawatan yang telah diberikan kepada pasien..."
+                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[110px] resize-none"
+                            >{{ $latestImplementasi ? $latestImplementasi->tindakan_dilakukan : '' }}</textarea>
+                        </div>
+
+                        <!-- Resep / Pemberian Obat -->
+                        <div>
+                            <label for="inputResepObat" class="block text-sm font-semibold text-on-surface mb-2">
+                                Resep / Pemberian Obat
+                            </label>
+                            <textarea
+                                id="inputResepObat"
+                                name="resep_obat"
+                                placeholder="Masukkan detail resep obat atau terapi obat jika ada..."
+                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[110px] resize-none"
+                            >{{ $latestImplementasi ? $latestImplementasi->resep_obat : '' }}</textarea>
+                        </div>
+                    </div>
+                </section>
             </form>
 
         </div>
@@ -601,7 +679,7 @@
 
                         <div class="pt-3 border-t border-outline-variant/60 text-xs text-on-surface-variant flex items-center gap-1">
                             <span class="material-symbols-outlined text-[14px]">schedule</span>
-                            <span id="summaryTimestamp">Terakhir: {{ \Carbon\Carbon::now()->translatedFormat('H:i') }} WIB</span>
+                            <span id="summaryTimestamp">Terakhir: {{ ($selectedPasien && $latestAsuhan && $latestAsuhan->updated_at) ? \Carbon\Carbon::parse($latestAsuhan->updated_at)->timezone('Asia/Jakarta')->translatedFormat('H:i') : \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('H:i') }} WIB</span>
                         </div>
                     </div>
                 </div>
@@ -627,9 +705,10 @@
 
                     <button
                         type="button"
-                        onclick="resetFormAsuhan()"
-                        class="w-full bg-transparent text-on-surface-variant py-2 rounded-xl text-xs font-semibold hover:bg-surface-container-low transition-colors">
-                        Bersihkan Form
+                        onclick="openResetModal()"
+                        class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 group">
+                        <span class="material-symbols-outlined text-[17px] text-red-500 group-hover:text-white transition-colors">restart_alt</span>
+                        <span>Bersihkan Form</span>
                     </button>
                 </div>
 
@@ -869,6 +948,30 @@ function selectPasienById(id) {
             tambahBarisRencanaWithData(0, '', '', '');
         }
 
+        // 8. Prefill Tindakan yang Dilakukan (Implementasi)
+        const impl = data.implementasi;
+        const inputTindakan = document.getElementById('inputTindakanDilakukan');
+        const inputResep = document.getElementById('inputResepObat');
+        if (inputTindakan) {
+            inputTindakan.value = (impl && impl.tindakan_dilakukan) ? impl.tindakan_dilakukan : '';
+        }
+        if (inputResep) {
+            inputResep.value = (impl && impl.resep_obat) ? impl.resep_obat : '';
+        }
+
+        // 9. Update Timestamp Ringkasan Dokumen
+        const summaryTimestamp = document.getElementById('summaryTimestamp');
+        if (summaryTimestamp) {
+            if (data.terakhir_update) {
+                summaryTimestamp.textContent = `Terakhir: ${data.terakhir_update} WIB`;
+            } else {
+                const now = new Date();
+                const hh = String(now.getHours()).padStart(2, '0');
+                const mm = String(now.getMinutes()).padStart(2, '0');
+                summaryTimestamp.textContent = `Terakhir: ${hh}:${mm} WIB`;
+            }
+        }
+
         updateRencanaCounter();
     })
     .catch(err => {
@@ -1002,8 +1105,9 @@ function submitFormAsuhan(event) {
             }
 
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('summaryTimestamp').textContent = `Terakhir: Hari ini, ${timeStr} WIB`;
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('summaryTimestamp').textContent = `Terakhir: ${hh}:${mm} WIB`;
         } else {
             alert(data.message || 'Gagal menyimpan data.');
         }
@@ -1016,23 +1120,97 @@ function submitFormAsuhan(event) {
     });
 }
 
+// =====================================
+// MODAL RESET FORM HANDLERS
+// =====================================
+function openResetModal() {
+    const modal = document.getElementById('resetModal');
+    const content = document.getElementById('resetModalContent');
+    if (!modal || !content) return;
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+    }, 10);
+}
+
+function closeResetModal() {
+    const modal = document.getElementById('resetModal');
+    const content = document.getElementById('resetModalContent');
+    if (!modal || !content) return;
+
+    content.classList.remove('scale-100');
+    content.classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 150);
+}
+
 function resetFormAsuhan() {
-    if (confirm('Apakah Anda yakin ingin mengosongkan input form?')) {
-        document.getElementById('inputKeluhanUtama').value = '';
-        document.getElementById('inputRiwayatKeluhan').value = '';
-        document.getElementById('inputTD').value = '';
-        document.getElementById('inputNadi').value = '';
-        document.getElementById('inputSuhu').value = '';
-        document.getElementById('inputRR').value = '';
-        document.getElementById('inputSpO2').value = '';
-        document.getElementById('inputDiagnosaAwal').value = '';
-        document.getElementById('inputFaktorTerkait').value = '';
-        document.getElementById('inputPrioritasDiagnosa').value = '';
-        const tbody = document.getElementById('rencanaTbody');
+    openResetModal();
+}
+
+// Close reset modal on outside click or Escape key
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('resetModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeResetModal();
+        });
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('resetModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeResetModal();
+        }
+    }
+});
+
+function confirmResetFormAsuhan() {
+    closeResetModal();
+
+    document.getElementById('inputKeluhanUtama').value = '';
+    document.getElementById('inputRiwayatKeluhan').value = '';
+    const kondisi = document.getElementById('inputKondisiUmum');
+    if (kondisi) kondisi.value = 'Baik';
+    const kesadaran = document.getElementById('inputKesadaran');
+    if (kesadaran) kesadaran.value = 'Compos Mentis';
+    document.getElementById('inputTD').value = '';
+    document.getElementById('inputNadi').value = '';
+    document.getElementById('inputSuhu').value = '';
+    document.getElementById('inputRR').value = '';
+    document.getElementById('inputSpO2').value = '';
+    document.getElementById('inputDiagnosaAwal').value = '';
+    document.getElementById('inputFaktorTerkait').value = '';
+    document.getElementById('inputPrioritasDiagnosa').value = '';
+    
+    const inputTindakan = document.getElementById('inputTindakanDilakukan');
+    const inputResep = document.getElementById('inputResepObat');
+    if (inputTindakan) inputTindakan.value = '';
+    if (inputResep) inputResep.value = '';
+
+    const tbody = document.getElementById('rencanaTbody');
+    if (tbody) {
         tbody.innerHTML = '';
         tambahBarisRencanaWithData(0, '', '', '');
         updateRencanaCounter();
     }
+
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const summaryTimestamp = document.getElementById('summaryTimestamp');
+    if (summaryTimestamp) {
+        summaryTimestamp.textContent = `Terakhir: ${hh}:${mm} WIB`;
+    }
+
+    const patientName = document.getElementById('cardNama') ? document.getElementById('cardNama').textContent.trim() : '-';
+    const patientId = document.getElementById('hidden_id_pasien') ? document.getElementById('hidden_id_pasien').value : null;
+    showToastNotification('Form Dibersihkan', 'Seluruh kolom input asuhan keperawatan telah berhasil dikosongkan.', patientName, patientId);
 }
 </script>
 

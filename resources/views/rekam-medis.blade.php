@@ -22,14 +22,15 @@
     </div>
 
     <!-- Bento Grid Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- Left Column (Search & Profile Summary) -->
-        <div class="lg:col-span-4 flex flex-col gap-6 w-full min-w-0">
+        <div class="lg:col-span-4 w-full min-w-0">
+            <div class="lg:sticky lg:top-20 flex flex-col gap-4 sm:gap-5 z-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto pr-1">
 
-            <!-- Search Pasien Card -->
-            <div class="bg-white rounded-xl border border-outline-variant shadow-sm p-4 sm:p-6">
-                <label class="block text-sm font-bold text-on-surface mb-2">Cari Pasien di Database</label>
+                <!-- Search Pasien Card -->
+                <div class="bg-white rounded-xl border border-outline-variant shadow-sm p-4 sm:p-5">
+                    <label class="block text-sm font-bold text-on-surface mb-2">Cari Pasien di Database</label>
                 <div class="relative mb-3">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
                     <input
@@ -43,7 +44,7 @@
                 </div>
 
                 <!-- Pasien List for Selection -->
-                <div class="space-y-2 max-h-60 overflow-y-auto pr-1" id="pasienListRM">
+                <div class="space-y-2 max-h-48 overflow-y-auto pr-1" id="pasienListRM">
                     @forelse($daftarPasien as $p)
                         <div
                             class="pasien-rm-card border {{ ($selectedPasien && $selectedPasien->id_pasien == $p->id_pasien) ? 'border-primary bg-[#E5F5F0]/30' : 'border-outline-variant/70 bg-white' }} rounded-xl p-3.5 cursor-pointer hover:border-primary transition-all group"
@@ -80,13 +81,13 @@
             </div>
 
             <!-- Pasien Terpilih Profile Card -->
-            <div class="bg-white rounded-xl border border-outline-variant shadow-sm p-4 sm:p-6 flex flex-col">
-                <div class="flex items-center gap-3.5 mb-5">
-                    <div id="selectedAvatar" class="w-13 h-13 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-bold shrink-0 p-3">
+            <div class="bg-white rounded-xl border border-outline-variant shadow-sm p-4 sm:p-5 flex flex-col">
+                <div class="flex items-center gap-3.5 mb-4">
+                    <div id="selectedAvatar" class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-base font-bold shrink-0 p-2.5">
                         {{ $selectedPasien ? $selectedPasien->initials : 'PS' }}
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h3 id="selectedName" class="text-lg font-bold text-on-surface leading-tight truncate">
+                        <h3 id="selectedName" class="text-base font-bold text-on-surface leading-tight truncate">
                             {{ $selectedPasien ? $selectedPasien->nama_lengkap : 'Belum Memilih Pasien' }}
                         </h3>
                         <p id="selectedGenderAge" class="text-xs text-on-surface-variant mt-0.5 truncate">
@@ -95,7 +96,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-3 mb-6 flex-1 text-xs sm:text-sm">
+                <div class="space-y-2.5 mb-5 flex-1 text-xs sm:text-sm">
                     <div class="flex justify-between border-b border-outline-variant/60 pb-2">
                         <span class="text-on-surface-variant">No. Rekam Medis</span>
                         <span id="selectedRM" class="font-bold text-on-surface">
@@ -144,7 +145,7 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2.5 mt-auto">
+                <div class="flex flex-col gap-2 mt-auto">
                     <a
                         id="btnActionAsuhan"
                         href="{{ $selectedPasien ? route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) : route('asuhan-keperawatan') }}"
@@ -155,11 +156,13 @@
 
                     <a
                         href="{{ route('pasien') }}"
-                        class="w-full bg-surface border border-outline-variant text-on-surface py-2.5 rounded-xl text-xs font-semibold hover:bg-surface-container-low transition-colors flex justify-center items-center gap-1.5 text-center">
+                        class="w-full bg-surface border border-outline-variant text-on-surface py-2 rounded-xl text-xs font-semibold hover:bg-surface-container-low transition-colors flex justify-center items-center gap-1.5 text-center">
                         <span class="material-symbols-outlined text-base">person</span>
                         <span>Daftar Seluruh Pasien</span>
                     </a>
                 </div>
+            </div>
+
             </div>
         </div>
 
@@ -189,10 +192,11 @@
                 <div class="p-4 sm:p-6 flex-1 relative" id="timelineContainer">
 
                     @if($riwayatKunjungan->isNotEmpty())
-                        <!-- Vertical Timeline Line -->
-                        <div class="absolute left-[31px] sm:left-[39px] top-6 bottom-6 w-0.5 bg-outline-variant/60"></div>
+                        <div class="relative" id="timelineContentWrapper">
+                            <!-- Vertical Timeline Line -->
+                            <div class="absolute left-[31px] sm:left-[39px] top-6 bottom-6 w-0.5 bg-outline-variant/60"></div>
 
-                        <div class="space-y-6" id="visitTimelineList">
+                            <div class="space-y-6" id="visitTimelineList">
                             @foreach($riwayatKunjungan as $index => $rm)
                                 @php
                                     $asuhan = $rm->asuhanMedis;
@@ -312,6 +316,7 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div>
                     @elseif($selectedPasien)
                         <!-- Empty State If Patient Has No Medical Records Yet -->
                         <div class="text-center py-12 px-4" id="emptyStateContainer">
@@ -450,12 +455,14 @@ function selectPasienRM(id) {
                     </a>
                 </div>
             `;
+            container.scrollTop = 0;
             return;
         }
 
         let html = `
-            <div class="absolute left-[31px] sm:left-[39px] top-6 bottom-6 w-0.5 bg-outline-variant/60"></div>
-            <div class="space-y-6">
+            <div class="relative" id="timelineContentWrapper">
+                <div class="absolute left-[31px] sm:left-[39px] top-6 bottom-6 w-0.5 bg-outline-variant/60"></div>
+                <div class="space-y-6" id="visitTimelineList">
         `;
 
         riwayat.forEach(item => {
@@ -609,8 +616,12 @@ function selectPasienRM(id) {
             `;
         });
 
-        html += `</div>`;
+        html += `
+                </div>
+            </div>
+        `;
         container.innerHTML = html;
+        container.scrollTop = 0;
     })
     .catch(err => {
         console.error(err);

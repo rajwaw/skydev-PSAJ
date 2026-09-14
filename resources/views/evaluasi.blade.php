@@ -128,6 +128,9 @@
                     <div class="bg-surface p-4 rounded-xl border border-outline-variant/60">
                         <p class="text-xs text-on-surface-variant mb-1 font-medium">Tindakan Dilakukan</p>
                         <p id="summaryTindakan" class="text-sm font-semibold text-on-surface">{{ $latestImplementasi ? $latestImplementasi->tindakan_dilakukan : '-' }}</p>
+                        <p id="summaryResep" class="text-xs text-on-surface-variant mt-1 {{ ($latestImplementasi && $latestImplementasi->resep_obat) ? '' : 'hidden' }}">
+                            <span class="font-medium text-primary">Resep:</span> <span id="summaryResepText">{{ ($latestImplementasi && $latestImplementasi->resep_obat) ? $latestImplementasi->resep_obat : '' }}</span>
+                        </p>
                     </div>
                     <div class="bg-surface p-4 rounded-xl border border-outline-variant/60">
                         <p class="text-xs text-on-surface-variant mb-1 font-medium">Rencana Intervensi</p>
@@ -147,24 +150,6 @@
                         <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">3</span>
                         Form Evaluasi Pasien
                     </h3>
-
-                    {{-- Tindakan / Implementasi Section --}}
-                    <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant mb-6 space-y-4">
-                        <h4 class="text-sm font-bold text-on-surface flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-primary text-base">task_alt</span>
-                            Tindakan yang Dilakukan (Implementasi)
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Tindakan Keperawatan <span class="text-red-500">*</span></label>
-                                <textarea id="implTindakanInput" name="tindakan_dilakukan" rows="3" class="w-full bg-white border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Masukkan detail tindakan yang telah diberikan..." required>{{ $latestImplementasi ? $latestImplementasi->tindakan_dilakukan : '' }}</textarea>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Resep / Pemberian Obat</label>
-                                <textarea id="implResepInput" name="resep_obat" rows="3" class="w-full bg-white border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Masukkan detail resep obat atau terapi obat jika ada...">{{ $latestImplementasi ? $latestImplementasi->resep_obat : '' }}</textarea>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
@@ -390,20 +375,23 @@ function selectPasien(id) {
 
             document.getElementById('summaryKeluhan').textContent   = r.keluhan_utama || '-';
             document.getElementById('summaryDiagnosa').textContent  = r.diagnosa || '-';
-            document.getElementById('summaryTindakan').textContent  = r.tindakan || '-';
+            document.getElementById('summaryTindakan').textContent  = (im && im.tindakan_dilakukan) ? im.tindakan_dilakukan : (r.tindakan || '-');
+            
+            const summaryResep = document.getElementById('summaryResep');
+            const summaryResepText = document.getElementById('summaryResepText');
+            if (summaryResep && summaryResepText) {
+                if (im && im.resep_obat) {
+                    summaryResepText.textContent = im.resep_obat;
+                    summaryResep.classList.remove('hidden');
+                } else {
+                    summaryResepText.textContent = '';
+                    summaryResep.classList.add('hidden');
+                }
+            }
             document.getElementById('summaryIntervensi').textContent = r.intervensi || '-';
 
             document.getElementById('hidden_id_pasien').value      = p.id_pasien;
             document.getElementById('hidden_id_rekam_medis').value = p.id_rekam_medis || '';
-
-            // Prefill Implementasi jika ada
-            if (im) {
-                document.getElementById('implTindakanInput').value = im.tindakan_dilakukan || '';
-                document.getElementById('implResepInput').value    = im.resep_obat || '';
-            } else {
-                document.getElementById('implTindakanInput').value = '';
-                document.getElementById('implResepInput').value    = '';
-            }
 
             if (ev) {
                 document.getElementById('evalKondisiSelect').value = ev.status_kondisi;
