@@ -463,12 +463,23 @@
                 <!-- 4. DIAGNOSIS KEPERAWATAN -->
                 <!-- ===================================== -->
                 <section class="bg-white rounded-xl border border-outline-variant p-5 sm:p-6 card-shadow mb-6">
-                    <h3 class="text-lg sm:text-xl font-bold text-on-surface mb-5 flex items-center gap-2 pb-3 border-b border-outline-variant/60">
-                        <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">4</span>
-                        Diagnosis Keperawatan
-                    </h3>
+                    <div class="flex items-center justify-between mb-5 pb-3 border-b border-outline-variant/60">
+                        <div>
+                            <h3 class="text-lg sm:text-xl font-bold text-on-surface flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">4</span>
+                                Diagnosis Keperawatan
+                            </h3>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Catat diagnosis masalah keperawatan dan etiologi (faktor terkait) untuk pasien ini.</p>
+                        </div>
+                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Hidden inputs untuk menyimpan diagnosis ke backend saat submit -->
+                    <input type="hidden" name="diagnosa_awal" id="hiddenDiagnosaAwal" value="{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->diagnosa_awal) ? $latestIntervensi->first()->diagnosa_awal : '' }}">
+                    <input type="hidden" name="faktor_terkait" id="hiddenFaktorTerkait" value="{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->faktor_terkait) ? $latestIntervensi->first()->faktor_terkait : '' }}">
+                    <input type="hidden" name="daftar_diagnosa" id="hiddenDaftarDiagnosa" value="">
+
+                    <!-- Form Input Masalah, B/D, dan Faktor Terkait -->
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4">
                         <!-- Masalah / Diagnosa Awal -->
                         <div>
                             <label for="inputDiagnosaAwal" class="block text-sm font-semibold text-on-surface mb-2">
@@ -476,10 +487,20 @@
                             </label>
                             <textarea
                                 id="inputDiagnosaAwal"
-                                name="diagnosa_awal"
-                                placeholder="Jelaskan masalah spesifik atau diagnosa keperawatan..."
-                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[90px] resize-none"
-                            >{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->diagnosa_awal) ? $latestIntervensi->first()->diagnosa_awal : '' }}</textarea>
+                                placeholder="Contoh: Nyeri Akut, Gangguan Pola Tidur, Hipertermia..."
+                                rows="2"
+                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[85px] resize-none"
+                            ></textarea>
+                        </div>
+
+                        <!-- Badge B/D di tengah tengah form -->
+                        <div class="flex flex-col items-center justify-center py-2 md:py-0 md:pt-6 select-none">
+                            <span class="inline-flex items-center justify-center px-3.5 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-extrabold border border-primary/20 shadow-xs tracking-wider">
+                                B/D
+                            </span>
+                            <span class="text-[11px] font-semibold text-primary mt-1 text-center whitespace-nowrap">
+                                (Berhubungan dengan)
+                            </span>
                         </div>
 
                         <!-- Faktor Terkait (Etiologi) -->
@@ -489,24 +510,63 @@
                             </label>
                             <textarea
                                 id="inputFaktorTerkait"
-                                name="faktor_terkait"
-                                placeholder="Penyebab, faktor risiko, atau pemicu kondisi..."
-                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[90px] resize-none"
-                            >{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->faktor_terkait) ? $latestIntervensi->first()->faktor_terkait : '' }}</textarea>
+                                placeholder="Contoh: Agen pencedera fisiologis (inflamasi), proses infeksi..."
+                                rows="2"
+                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[85px] resize-none"
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Catat di bawah form kotakan -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-3 pt-2">
+                        <p class="text-xs text-on-surface-variant">
+                            *Tekan <strong class="text-primary font-semibold">Catat</strong> untuk menambahkan diagnosis ke daftar di bawah.
+                        </p>
+                        <button
+                            type="button"
+                            id="btnCatatDiagnosis"
+                            onclick="catatDiagnosis()"
+                            class="bg-[#E5F5F0] hover:bg-primary text-primary hover:text-white border border-primary/30 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
+                            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                            <span>Catat</span>
+                        </button>
+                    </div>
+
+                    <!-- Daftar Hasil Diagnosis Tercatat (Nomor 1, 2, dst) -->
+                    <div class="mt-5 pt-4 border-t border-outline-variant/60">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-on-surface flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[18px]">format_list_numbered</span>
+                                Daftar Diagnosis Keperawatan Tercatat
+                            </label>
+                            <span id="badgeJumlahDiagnosis" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                                0 Diagnosis
+                            </span>
                         </div>
 
-                        <!-- Prioritas Diagnosa -->
-                        <div class="md:col-span-2">
-                            <label for="inputPrioritasDiagnosa" class="block text-sm font-semibold text-on-surface mb-2">
-                                Prioritas Diagnosa &amp; Catatan Khusus
-                            </label>
-                            <textarea
-                                id="inputPrioritasDiagnosa"
-                                name="prioritas_diagnosa"
-                                placeholder="Tentukan prioritas penanganan dan arahan khusus..."
-                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[80px] resize-none"
-                            >{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->prioritas_diagnosa) ? $latestIntervensi->first()->prioritas_diagnosa : '' }}</textarea>
+                        <!-- Container Card Diagnosa -->
+                        <div id="containerDaftarDiagnosis" class="space-y-2.5">
+                            <!-- Diisi secara dinamis oleh JavaScript -->
                         </div>
+
+                        <!-- Kotak Informasi jika belum ada diagnosis -->
+                        <div id="emptyDaftarDiagnosis" class="text-center py-5 px-4 border border-dashed border-outline-variant/80 rounded-xl bg-surface/60 text-on-surface-variant text-xs">
+                            <span class="material-symbols-outlined text-outline-variant text-2xl mb-1 block">clinical_notes</span>
+                            Belum ada diagnosis yang dicatat. Silakan masukkan Masalah &amp; Faktor Terkait di atas, lalu klik <strong>Catat</strong>.
+                        </div>
+                    </div>
+
+                    <!-- Prioritas Diagnosa & Catatan Khusus -->
+                    <div class="mt-5 pt-4 border-t border-outline-variant/60">
+                        <label for="inputPrioritasDiagnosa" class="block text-sm font-semibold text-on-surface mb-2">
+                            Prioritas Diagnosa &amp; Catatan Khusus
+                        </label>
+                        <textarea
+                            id="inputPrioritasDiagnosa"
+                            name="prioritas_diagnosa"
+                            placeholder="Tentukan prioritas penanganan dan arahan khusus..."
+                            class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[80px] resize-none"
+                        >{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->prioritas_diagnosa) ? $latestIntervensi->first()->prioritas_diagnosa : '' }}</textarea>
                     </div>
                 </section>
 
@@ -932,8 +992,12 @@ function selectPasienById(id) {
 
         // 6. Prefill Diagnosis & Intervensi
         const firstIntervensi = intervensi && intervensi.length > 0 ? intervensi[0] : null;
-        document.getElementById('inputDiagnosaAwal').value = firstIntervensi ? (firstIntervensi.diagnosa_awal || '') : '';
-        document.getElementById('inputFaktorTerkait').value = firstIntervensi ? (firstIntervensi.faktor_terkait || '') : '';
+        parseAndRenderDiagnoses(
+            firstIntervensi ? (firstIntervensi.diagnosa_awal || '') : '',
+            firstIntervensi ? (firstIntervensi.faktor_terkait || '') : ''
+        );
+        document.getElementById('inputDiagnosaAwal').value = '';
+        document.getElementById('inputFaktorTerkait').value = '';
         document.getElementById('inputPrioritasDiagnosa').value = firstIntervensi ? (firstIntervensi.prioritas_diagnosa || '') : '';
 
         // 7. Render Intervensi Table Rows
@@ -979,6 +1043,222 @@ function selectPasienById(id) {
         console.error(err);
         alert('Terjadi kesalahan saat memuat data pasien.');
     });
+}
+
+// =====================================
+// MANAJEMEN DIAGNOSIS KEPERAWATAN (B/D)
+// =====================================
+let diagnosisList = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function catatDiagnosis() {
+    const inputMasalah = document.getElementById('inputDiagnosaAwal');
+    const inputFaktor = document.getElementById('inputFaktorTerkait');
+    if (!inputMasalah || !inputFaktor) return;
+
+    const masalah = inputMasalah.value.trim();
+    const faktor = inputFaktor.value.trim();
+
+    if (!masalah) {
+        alert('Harap isi Masalah / Diagnosa Awal terlebih dahulu.');
+        inputMasalah.focus();
+        return;
+    }
+
+    diagnosisList.push({
+        masalah: masalah,
+        faktor_terkait: faktor
+    });
+
+    inputMasalah.value = '';
+    inputFaktor.value = '';
+    inputMasalah.focus();
+
+    renderDiagnosisList();
+    syncHiddenInputs();
+}
+
+function hapusDiagnosis(index) {
+    if (index >= 0 && index < diagnosisList.length) {
+        diagnosisList.splice(index, 1);
+        renderDiagnosisList();
+        syncHiddenInputs();
+    }
+}
+
+function editDiagnosis(index) {
+    if (index >= 0 && index < diagnosisList.length) {
+        const item = diagnosisList[index];
+        const inputMasalah = document.getElementById('inputDiagnosaAwal');
+        const inputFaktor = document.getElementById('inputFaktorTerkait');
+
+        if (inputMasalah) inputMasalah.value = item.masalah;
+        if (inputFaktor) inputFaktor.value = item.faktor_terkait || '';
+
+        diagnosisList.splice(index, 1);
+        renderDiagnosisList();
+        syncHiddenInputs();
+
+        if (inputMasalah) inputMasalah.focus();
+    }
+}
+
+function renderDiagnosisList() {
+    const container = document.getElementById('containerDaftarDiagnosis');
+    const emptyState = document.getElementById('emptyDaftarDiagnosis');
+    const badgeCount = document.getElementById('badgeJumlahDiagnosis');
+
+    if (!container) return;
+
+    if (badgeCount) {
+        badgeCount.textContent = `${diagnosisList.length} Diagnosis`;
+    }
+
+    if (diagnosisList.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
+
+    let html = '';
+    diagnosisList.forEach((item, idx) => {
+        const no = idx + 1;
+        html += `
+            <div class="diagnosis-card bg-white hover:bg-surface-container-low border border-outline-variant/70 rounded-xl p-3 sm:p-3.5 flex items-start justify-between gap-3 transition-all shadow-xs group">
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <span class="w-6 h-6 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                        ${no}
+                    </span>
+                    <div class="text-xs sm:text-sm text-on-surface leading-relaxed break-words flex-1">
+                        <span class="font-bold text-on-surface">${escapeHtml(item.masalah)}</span>
+                        ${item.faktor_terkait && item.faktor_terkait.trim() !== '' ? `
+                            <span class="inline-block mx-1.5 px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">
+                                Berhubungan dengan
+                            </span>
+                            <span class="text-on-surface-variant font-medium">${escapeHtml(item.faktor_terkait)}</span>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0 ml-2">
+                    <button type="button" onclick="editDiagnosis(${idx})" class="text-on-surface-variant hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors cursor-pointer" title="Edit Diagnosis">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button type="button" onclick="hapusDiagnosis(${idx})" class="text-on-surface-variant hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer" title="Hapus Diagnosis">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function syncHiddenInputs() {
+    const hiddenDiagnosa = document.getElementById('hiddenDiagnosaAwal');
+    const hiddenFaktor = document.getElementById('hiddenFaktorTerkait');
+    const hiddenDaftar = document.getElementById('hiddenDaftarDiagnosa');
+
+    if (diagnosisList.length === 0) {
+        if (hiddenDiagnosa) hiddenDiagnosa.value = '';
+        if (hiddenFaktor) hiddenFaktor.value = '';
+        if (hiddenDaftar) hiddenDaftar.value = '';
+        return;
+    }
+
+    const diagnosaLines = diagnosisList.map((item, idx) => {
+        const no = idx + 1;
+        const masalah = item.masalah ? item.masalah.trim() : '';
+        const faktor = item.faktor_terkait ? item.faktor_terkait.trim() : '';
+        if (faktor !== '') {
+            return `${no}. ${masalah} Berhubungan dengan ${faktor}`;
+        }
+        return `${no}. ${masalah}`;
+    });
+
+    const faktorLines = diagnosisList
+        .filter(item => item.faktor_terkait && item.faktor_terkait.trim() !== '')
+        .map((item, idx) => `${idx + 1}. ${item.faktor_terkait.trim()}`);
+
+    if (hiddenDiagnosa) hiddenDiagnosa.value = diagnosaLines.join("\n");
+    if (hiddenFaktor) hiddenFaktor.value = faktorLines.join("\n");
+    if (hiddenDaftar) hiddenDaftar.value = JSON.stringify(diagnosisList);
+}
+
+function parseAndRenderDiagnoses(rawDiagnosa, rawFaktor = '') {
+    diagnosisList = [];
+
+    if (!rawDiagnosa || typeof rawDiagnosa !== 'string' || rawDiagnosa.trim() === '') {
+        renderDiagnosisList();
+        syncHiddenInputs();
+        return;
+    }
+
+    const trimmed = rawDiagnosa.trim();
+
+    // Cek jika format JSON
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+                diagnosisList = parsed
+                    .map(p => ({
+                        masalah: (p.masalah || '').trim(),
+                        faktor_terkait: (p.faktor_terkait || '').trim()
+                    }))
+                    .filter(p => p.masalah !== '');
+                if (diagnosisList.length > 0) {
+                    renderDiagnosisList();
+                    syncHiddenInputs();
+                    return;
+                }
+            }
+        } catch (e) {
+            // Lanjutkan parsing baris teks
+        }
+    }
+
+    // Split per baris
+    const lines = trimmed.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+    lines.forEach(line => {
+        // Hilangkan nomor di awal seperti "1. ", "1) ", "[1] "
+        let cleaned = line.replace(/^\[?\d+[\.\)\]]\s*/, '').trim();
+        if (!cleaned) return;
+
+        // Cek pemisah "Berhubungan dengan" atau "b.d" atau "B/D"
+        const bdRegex = /\s+(?:Berhubungan\s+dengan|b\.?d\.?|b\/d)\s+/i;
+        if (bdRegex.test(cleaned)) {
+            const parts = cleaned.split(bdRegex);
+            const masalah = parts[0].trim();
+            const faktor = parts.slice(1).join(' Berhubungan dengan ').trim();
+            if (masalah) {
+                diagnosisList.push({ masalah, faktor_terkait: faktor });
+            }
+        } else {
+            // Jika satu baris tanpa kata "Berhubungan dengan" dan rawFaktor tersedia
+            if (lines.length === 1 && rawFaktor && rawFaktor.trim() !== '') {
+                let cleanFaktor = rawFaktor.replace(/^\[?\d+[\.\)\]]\s*/, '').trim();
+                diagnosisList.push({ masalah: cleaned, faktor_terkait: cleanFaktor });
+            } else {
+                diagnosisList.push({ masalah: cleaned, faktor_terkait: '' });
+            }
+        }
+    });
+
+    renderDiagnosisList();
+    syncHiddenInputs();
 }
 
 // Tambah Baris Intervensi
@@ -1078,6 +1358,20 @@ function submitFormAsuhan(event) {
         <span>Menyimpan ke Database...</span>
     `;
 
+    // Auto-catat jika ada input masalah yang belum sempat diklik "Catat"
+    const inputMasalahEl = document.getElementById('inputDiagnosaAwal');
+    const inputFaktorEl = document.getElementById('inputFaktorTerkait');
+    if (inputMasalahEl && inputMasalahEl.value.trim() !== '') {
+        diagnosisList.push({
+            masalah: inputMasalahEl.value.trim(),
+            faktor_terkait: inputFaktorEl ? inputFaktorEl.value.trim() : ''
+        });
+        inputMasalahEl.value = '';
+        if (inputFaktorEl) inputFaktorEl.value = '';
+        renderDiagnosisList();
+    }
+    syncHiddenInputs();
+
     const formData = new FormData(form);
 
     fetch("{{ route('asuhan-keperawatan.store') }}", {
@@ -1151,8 +1445,29 @@ function resetFormAsuhan() {
     openResetModal();
 }
 
-// Close reset modal on outside click or Escape key
+// Inisialisasi data dan event listener saat halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
+    // Inisialisasi daftar diagnosis dari data awal
+    @php
+        $initDiagnosaAwal = ($latestIntervensi && $latestIntervensi->isNotEmpty()) ? $latestIntervensi->first()->diagnosa_awal : '';
+        $initFaktorTerkait = ($latestIntervensi && $latestIntervensi->isNotEmpty()) ? $latestIntervensi->first()->faktor_terkait : '';
+    @endphp
+    parseAndRenderDiagnoses(@json($initDiagnosaAwal), @json($initFaktorTerkait));
+
+    // Keyboard shortcut Enter untuk mencatat diagnosis dari form
+    const inputMasalahEl = document.getElementById('inputDiagnosaAwal');
+    const inputFaktorEl = document.getElementById('inputFaktorTerkait');
+    [inputMasalahEl, inputFaktorEl].forEach(el => {
+        if (el) {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    catatDiagnosis();
+                }
+            });
+        }
+    });
+
     const modal = document.getElementById('resetModal');
     if (modal) {
         modal.addEventListener('click', (e) => {
@@ -1187,6 +1502,11 @@ function confirmResetFormAsuhan() {
     document.getElementById('inputDiagnosaAwal').value = '';
     document.getElementById('inputFaktorTerkait').value = '';
     document.getElementById('inputPrioritasDiagnosa').value = '';
+
+    // Bersihkan daftar diagnosis
+    diagnosisList = [];
+    renderDiagnosisList();
+    syncHiddenInputs();
     
     const inputTindakan = document.getElementById('inputTindakanDilakukan');
     const inputResep = document.getElementById('inputResepObat');

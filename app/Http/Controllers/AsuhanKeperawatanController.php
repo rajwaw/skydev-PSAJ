@@ -154,6 +154,7 @@ class AsuhanKeperawatanController extends Controller
             'spo2' => 'nullable|numeric',
             'diagnosa_awal' => 'nullable|string',
             'faktor_terkait' => 'nullable|string',
+            'daftar_diagnosa' => 'nullable',
             'prioritas_diagnosa' => 'nullable|string',
             'rencana_tindakan' => 'nullable|array',
             'rencana_tindakan.*.tindakan' => 'nullable|string',
@@ -228,6 +229,40 @@ class AsuhanKeperawatanController extends Controller
             );
 
             // 4. Simpan / perbarui Intervensi (Diagnosis & Rencana Tindakan)
+            // Parse daftar_diagnosa jika ada
+            $diagnosaAwal = $request->diagnosa_awal;
+            $faktorTerkait = $request->faktor_terkait;
+
+            $daftarDiagnosa = $request->daftar_diagnosa;
+            if (is_string($daftarDiagnosa) && (str_starts_with($daftarDiagnosa, '[') || str_starts_with($daftarDiagnosa, '{'))) {
+                $daftarDiagnosa = json_decode($daftarDiagnosa, true);
+            }
+
+            if (!empty($daftarDiagnosa) && is_array($daftarDiagnosa)) {
+                $diagnosaLines = [];
+                $faktorLines = [];
+                $no = 1;
+                foreach ($daftarDiagnosa as $d) {
+                    $masalah = trim(is_array($d) ? ($d['masalah'] ?? '') : $d);
+                    $faktor = trim(is_array($d) ? ($d['faktor_terkait'] ?? '') : '');
+
+                    if ($masalah !== '') {
+                        if ($faktor !== '') {
+                            $diagnosaLines[] = "{$no}. {$masalah} Berhubungan dengan {$faktor}";
+                            $faktorLines[] = "{$no}. {$faktor}";
+                        } else {
+                            $diagnosaLines[] = "{$no}. {$masalah}";
+                        }
+                        $no++;
+                    }
+                }
+
+                if (!empty($diagnosaLines)) {
+                    $diagnosaAwal = implode("\n", $diagnosaLines);
+                    $faktorTerkait = !empty($faktorLines) ? implode("\n", $faktorLines) : null;
+                }
+            }
+
             // Hapus intervensi lama untuk rekam medis ini lalu buat yang baru
             Intervensi::where('id_rekam_medis', $rekamMedis->id_rekam_medis)->delete();
 
@@ -238,8 +273,8 @@ class AsuhanKeperawatanController extends Controller
                     if (!empty($item['tindakan'])) {
                         Intervensi::create([
                             'id_rekam_medis' => $rekamMedis->id_rekam_medis,
-                            'diagnosa_awal' => $request->diagnosa_awal ?: $request->keluhan_utama,
-                            'faktor_terkait' => $request->faktor_terkait,
+                            'diagnosa_awal' => $diagnosaAwal ?: $request->keluhan_utama,
+                            'faktor_terkait' => $faktorTerkait,
                             'prioritas_diagnosa' => $request->prioritas_diagnosa,
                             'rencana_tindakan' => $item['tindakan'],
                             'target' => $item['target'] ?? null,
@@ -250,11 +285,11 @@ class AsuhanKeperawatanController extends Controller
                 }
             }
 
-            if (!$hasCreatedIntervensi && ($request->diagnosa_awal || $request->faktor_terkait || $request->prioritas_diagnosa)) {
+            if (!$hasCreatedIntervensi && ($diagnosaAwal || $faktorTerkait || $request->prioritas_diagnosa)) {
                 Intervensi::create([
                     'id_rekam_medis' => $rekamMedis->id_rekam_medis,
-                    'diagnosa_awal' => $request->diagnosa_awal ?: $request->keluhan_utama,
-                    'faktor_terkait' => $request->faktor_terkait,
+                    'diagnosa_awal' => $diagnosaAwal ?: $request->keluhan_utama,
+                    'faktor_terkait' => $faktorTerkait,
                     'prioritas_diagnosa' => $request->prioritas_diagnosa,
                     'rencana_tindakan' => null,
                     'target' => null,

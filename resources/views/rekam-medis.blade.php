@@ -295,7 +295,7 @@
                                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                                                 <div>
                                                     <p class="text-xs font-bold text-on-surface-variant">Diagnosis / Masalah:</p>
-                                                    <p class="text-on-surface font-medium mt-0.5">{{ $diagnosa }}</p>
+                                                    <p class="text-on-surface font-medium mt-0.5 whitespace-pre-line">{{ $diagnosa }}</p>
                                                 </div>
                                                 <div>
                                                     <p class="text-xs font-bold text-on-surface-variant">Rencana Tindakan:</p>

@@ -276,7 +276,7 @@
 
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                             <p class="text-xs font-semibold text-slate-500 mb-1">Diagnosa</p>
-                            <p id="summaryDiagnosa" class="text-sm font-medium text-slate-800">
+                            <p id="summaryDiagnosa" class="text-sm font-medium text-slate-800 whitespace-pre-line">
                                 {{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->diagnosa_awal) ? $latestIntervensi->first()->diagnosa_awal : ($latestAsuhan ? $latestAsuhan->keluhan_utama : '-') }}
                             </p>
                         </div>

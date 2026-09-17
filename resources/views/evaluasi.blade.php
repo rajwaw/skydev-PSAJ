@@ -121,7 +121,7 @@
                     </div>
                     <div class="bg-surface p-4 rounded-xl border border-outline-variant/60">
                         <p class="text-xs text-on-surface-variant mb-1 font-medium">Diagnosa</p>
-                        <p id="summaryDiagnosa" class="text-sm font-semibold text-on-surface">
+                        <p id="summaryDiagnosa" class="text-sm font-semibold text-on-surface whitespace-pre-line">
                             {{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->diagnosa_awal) ? $latestIntervensi->first()->diagnosa_awal : ($latestAsuhan ? $latestAsuhan->keluhan_utama : '-') }}
                         </p>
                     </div>
