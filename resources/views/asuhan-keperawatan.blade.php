@@ -566,7 +566,7 @@
                             name="prioritas_diagnosa"
                             placeholder="Tentukan prioritas penanganan dan arahan khusus..."
                             class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[80px] resize-none"
-                        >{{ ($latestIntervensi->isNotEmpty() && $latestIntervensi->first()->prioritas_diagnosa) ? $latestIntervensi->first()->prioritas_diagnosa : '' }}</textarea>
+                        >{{ ($latestIntervensi && $latestIntervensi->isNotEmpty()) ? ($latestIntervensi->pluck('prioritas_diagnosa')->filter()->first() ?? '') : '' }}</textarea>
                     </div>
                 </section>
 
@@ -590,6 +590,44 @@
                             <span class="material-symbols-outlined text-[16px]">add</span>
                             Tambah Rencana
                         </button>
+                    </div>
+
+                    <!-- Banner Pengingat: Prioritas Diagnosa & Catatan Khusus (dari Bagian 4) -->
+                    @php
+                        $prioritasVal = ($latestIntervensi && $latestIntervensi->isNotEmpty()) 
+                            ? ($latestIntervensi->pluck('prioritas_diagnosa')->filter()->first() ?? '') 
+                            : '';
+                    @endphp
+                    <div id="reminderPrioritasBox" class="mb-5 rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/90 to-orange-50/60 p-4 transition-all shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-2.5 min-w-0 flex-1">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span class="material-symbols-outlined text-[18px]">push_pin</span>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                                            <span>Pengingat: Prioritas Diagnosa &amp; Catatan Khusus</span>
+                                        </h4>
+                                        <span class="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                                            Dari Bagian 4 Diagnosis Keperawatan
+                                        </span>
+                                    </div>
+                                    <div id="reminderPrioritasContent" class="text-xs sm:text-sm font-medium text-slate-800 whitespace-pre-line leading-relaxed {{ empty($prioritasVal) ? 'hidden' : '' }}">{{ $prioritasVal }}</div>
+                                    <p id="reminderPrioritasEmpty" class="text-xs text-amber-800/80 italic {{ !empty($prioritasVal) ? 'hidden' : '' }}">
+                                        Belum ada prioritas diagnosa &amp; catatan khusus yang diisi pada bagian 4 (Diagnosis Keperawatan). Tentukan prioritas diagnosa di atas sebagai pedoman arahan tindakan di tabel ini.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onclick="fokusKePrioritasDiagnosa()"
+                                class="text-amber-800 hover:text-amber-900 bg-white/80 hover:bg-white border border-amber-300/80 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 flex-shrink-0 active:scale-95 shadow-xs"
+                                title="Edit Prioritas di Bagian 4">
+                                <span class="material-symbols-outlined text-[15px]">edit_note</span>
+                                <span>Ubah di No. 4</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto rounded-xl border border-outline-variant/70">
@@ -998,7 +1036,11 @@ function selectPasienById(id) {
         );
         document.getElementById('inputDiagnosaAwal').value = '';
         document.getElementById('inputFaktorTerkait').value = '';
-        document.getElementById('inputPrioritasDiagnosa').value = firstIntervensi ? (firstIntervensi.prioritas_diagnosa || '') : '';
+        const savedPrioritas = (intervensi && intervensi.length > 0)
+            ? (intervensi.find(it => it.prioritas_diagnosa && it.prioritas_diagnosa.trim() !== '')?.prioritas_diagnosa || firstIntervensi?.prioritas_diagnosa || '')
+            : '';
+        document.getElementById('inputPrioritasDiagnosa').value = savedPrioritas;
+        syncPrioritasReminder();
 
         // 7. Render Intervensi Table Rows
         const tbody = document.getElementById('rencanaTbody');
@@ -1043,6 +1085,38 @@ function selectPasienById(id) {
         console.error(err);
         alert('Terjadi kesalahan saat memuat data pasien.');
     });
+}
+
+// =====================================
+// PENGINGAT PRIORITAS DIAGNOSA (NO. 4 -> NO. 5)
+// =====================================
+function syncPrioritasReminder() {
+    const elInput = document.getElementById('inputPrioritasDiagnosa');
+    const elContent = document.getElementById('reminderPrioritasContent');
+    const elEmpty = document.getElementById('reminderPrioritasEmpty');
+
+    if (!elInput || !elContent || !elEmpty) return;
+
+    const val = elInput.value.trim();
+    if (val) {
+        elContent.textContent = val;
+        elContent.classList.remove('hidden');
+        elEmpty.classList.add('hidden');
+    } else {
+        elContent.textContent = '';
+        elContent.classList.add('hidden');
+        elEmpty.classList.remove('hidden');
+    }
+}
+
+function fokusKePrioritasDiagnosa() {
+    const el = document.getElementById('inputPrioritasDiagnosa');
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            el.focus();
+        }, 300);
+    }
 }
 
 // =====================================
@@ -1474,6 +1548,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === modal) closeResetModal();
         });
     }
+
+    // Event listener real-time sync Prioritas Diagnosa ke Pengingat di Nomor 5
+    const inputPrioritasEl = document.getElementById('inputPrioritasDiagnosa');
+    if (inputPrioritasEl) {
+        inputPrioritasEl.addEventListener('input', syncPrioritasReminder);
+    }
+    syncPrioritasReminder();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -1502,6 +1583,7 @@ function confirmResetFormAsuhan() {
     document.getElementById('inputDiagnosaAwal').value = '';
     document.getElementById('inputFaktorTerkait').value = '';
     document.getElementById('inputPrioritasDiagnosa').value = '';
+    syncPrioritasReminder();
 
     // Bersihkan daftar diagnosis
     diagnosisList = [];

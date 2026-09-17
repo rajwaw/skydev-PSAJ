@@ -203,7 +203,10 @@
                                     $intervensiList = $rm->intervensi;
                                     $firstIntervensi = $intervensiList->first();
                                     $diagnosa = $firstIntervensi ? $firstIntervensi->diagnosa_awal : ($asuhan ? $asuhan->keluhan_utama : 'Pemeriksaan Umum');
+                                    $prioritas = $intervensiList->pluck('prioritas_diagnosa')->filter()->first();
                                     $planList = $intervensiList->pluck('rencana_tindakan')->filter()->values();
+                                    $implementasi = $rm->implementasi;
+                                    $evaluasi = $rm->evaluasi;
                                 @endphp
 
                                 <div class="relative pl-10 sm:pl-12 group visit-entry">
@@ -310,7 +313,71 @@
                                                     @endif
                                                 </div>
                                             </div>
+
+                                            @if($prioritas)
+                                                <div class="mt-3 pt-2.5 border-t border-outline-variant/50">
+                                                    <div class="flex items-start gap-2 bg-amber-50/80 border border-amber-200 rounded-lg p-2.5 text-xs">
+                                                        <span class="material-symbols-outlined text-amber-700 text-base flex-shrink-0 mt-0.5">push_pin</span>
+                                                        <div class="min-w-0 flex-1">
+                                                            <span class="font-bold text-amber-900 block mb-0.5">Prioritas Diagnosa &amp; Catatan Khusus:</span>
+                                                            <p class="text-slate-800 whitespace-pre-line leading-relaxed">{{ $prioritas }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
+
+                                        @if($implementasi)
+                                            <div class="bg-[#F8FAFC] rounded-xl p-3.5 sm:p-4 border border-outline-variant/60 mt-3">
+                                                <h5 class="text-xs font-bold text-on-surface mb-2 flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-primary text-base">task_alt</span>
+                                                    Tindakan &amp; Terapi Obat (Implementasi)
+                                                </h5>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Tindakan Keperawatan:</p>
+                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $implementasi->tindakan_dilakukan }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Resep / Pemberian Obat:</p>
+                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $implementasi->resep_obat ?: '-' }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        @if($evaluasi)
+                                            <div class="bg-[#F8FAFC] rounded-xl p-3.5 sm:p-4 border border-outline-variant/60 mt-3">
+                                                <h5 class="text-xs font-bold text-on-surface mb-2 flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-primary text-base">rate_review</span>
+                                                    Evaluasi Tindakan (SOAP)
+                                                </h5>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm mb-2">
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Kondisi &amp; Status:</p>
+                                                        <p class="text-on-surface font-medium mt-0.5">
+                                                            Kondisi: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700">{{ $evaluasi->status_kondisi }}</span> &bull; 
+                                                            Status: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">{{ $evaluasi->status_evaluasi }}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Keluhan Setelah Tindakan:</p>
+                                                        <p class="text-on-surface font-medium mt-0.5">{{ $evaluasi->keluhan_setelah_tindakan ?: '-' }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-2 border-t border-outline-variant/40">
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Respons Pasien:</p>
+                                                        <p class="text-on-surface font-medium mt-0.5">{{ $evaluasi->respon_pasien ?: '-' }}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs font-bold text-on-surface-variant">Hasil Evaluasi:</p>
+                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $evaluasi->hasil_evaluasi ?: '-' }}</p>
+                                                        <p class="text-xs text-on-surface-variant mt-1.5 font-medium"><span class="text-secondary font-bold">Rencana Lanjut:</span> {{ $evaluasi->rencana_selanjutnya ?: '-' }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
 
                                     </div>
                                 </div>
@@ -374,6 +441,16 @@ function filterPasienRM(keyword) {
             card.style.display = 'none';
         }
     });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function selectPasienRM(id) {
@@ -550,13 +627,24 @@ function selectPasienRM(id) {
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                                 <div>
                                     <p class="text-xs font-bold text-on-surface-variant">Diagnosis / Masalah:</p>
-                                    <p class="text-on-surface font-medium mt-0.5">${item.diagnosa}</p>
+                                    <p class="text-on-surface font-medium mt-0.5 whitespace-pre-line">${escapeHtml(item.diagnosa)}</p>
                                 </div>
                                 <div>
                                     <p class="text-xs font-bold text-on-surface-variant">Rencana Tindakan:</p>
                                     ${planListHtml}
                                 </div>
                             </div>
+                            ${item.prioritas_diagnosa ? `
+                            <div class="mt-3 pt-2.5 border-t border-outline-variant/50">
+                                <div class="flex items-start gap-2 bg-amber-50/80 border border-amber-200 rounded-lg p-2.5 text-xs">
+                                    <span class="material-symbols-outlined text-amber-700 text-base flex-shrink-0 mt-0.5">push_pin</span>
+                                    <div class="min-w-0 flex-1">
+                                        <span class="font-bold text-amber-900 block mb-0.5">Prioritas Diagnosa &amp; Catatan Khusus:</span>
+                                        <p class="text-slate-800 whitespace-pre-line leading-relaxed">${escapeHtml(item.prioritas_diagnosa)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
 
                         ${item.implementasi ? `

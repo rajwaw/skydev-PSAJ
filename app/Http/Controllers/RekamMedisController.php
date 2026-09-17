@@ -140,6 +140,7 @@ class RekamMedisController extends Controller
                 'diagnosa' => $intervensiList->isNotEmpty() && $intervensiList->first()->diagnosa_awal 
                     ? $intervensiList->first()->diagnosa_awal 
                     : ($asuhan ? $asuhan->keluhan_utama : '-'),
+                'prioritas_diagnosa' => $intervensiList->pluck('prioritas_diagnosa')->filter()->first() ?: null,
                 'rencana_tindakan' => $intervensiList->pluck('rencana_tindakan')->filter()->values()->all(),
                 'implementasi' => $implementasi ? [
                     'tindakan_dilakukan' => $implementasi->tindakan_dilakukan,
