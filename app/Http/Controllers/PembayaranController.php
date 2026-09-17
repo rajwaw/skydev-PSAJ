@@ -288,7 +288,17 @@ class PembayaranController extends Controller
                 }
             }
 
-            // 2. Parse & siapkan rincian obat dan tindakan
+            // 2. Cegah pembayaran ganda (double charge) untuk pendaftaran yang sudah lunas
+            $pembayaranLama = Pembayaran::where('id_pendaftaran', $pendaftaran->id_pendaftaran)->first();
+            if ($pembayaranLama && in_array(strtolower($pembayaranLama->status_bayar), ['lunas', 'selesai'])) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pasien ini telah melunasi pembayaran. Tidak dapat diproses ulang.',
+                ], 409);
+            }
+
+            // 3. Parse & siapkan rincian obat dan tindakan
             $rincianObat = $request->rincian_obat;
             if (is_string($rincianObat)) {
                 $rincianObatDecoded = json_decode($rincianObat, true);

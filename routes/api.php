@@ -3,4 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PasienController;
 
-Route::apiResource('pasien', PasienController::class);
+Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+    Route::apiResource('pasien', PasienController::class);
+});

@@ -6,6 +6,7 @@ use App\Models\Pasien;
 use App\Models\AiPercakapan;
 use App\Models\AiPesan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -60,7 +61,7 @@ class AiClinicalAssistantController extends Controller
             if (!$response->successful()) {
                 return response()->json([
                     'success' => false,
-                    'summary' => 'Gagal menghubungi AI. Silakan coba lagi (error ' . $response->status() . ').',
+                    'summary' => 'Gagal menghubungi AI. Silakan coba lagi.',
                 ]);
             }
 
@@ -75,7 +76,7 @@ class AiClinicalAssistantController extends Controller
             Log::error('Gemini API exception', ['message' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'summary' => 'Terjadi kesalahan saat menghubungi AI: ' . $e->getMessage(),
+                'summary' => 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.',
             ]);
         }
     }
@@ -218,17 +219,8 @@ class AiClinicalAssistantController extends Controller
     {
         $request->validate(['pesan' => 'required|string']);
 
+        $pesanUser = $request->input('pesan');
         $percakapan = AiPercakapan::with(['pesan', 'pasien'])->findOrFail($id);
-
-        AiPesan::create([
-            'id_percakapan' => $id,
-            'role' => 'user',
-            'isi' => $request->input('pesan'),
-        ]);
-
-        if (!$percakapan->judul) {
-            $percakapan->update(['judul' => Str::limit($request->input('pesan'), 50)]);
-        }
 
         $systemPrompt = 'Kamu adalah asisten AI yang membantu tenaga medis klinik dengan informasi klinis. '
             . 'JANGAN membuat diagnosa pasti atau resep obat baru yang tidak berbasis data yang diberikan. '
@@ -246,6 +238,10 @@ class AiClinicalAssistantController extends Controller
                 'parts' => [['text' => $pesan->isi]],
             ];
         }
+        $contents[] = [
+            'role' => 'user',
+            'parts' => [['text' => $pesanUser]],
+        ];
 
         try {
             $response = Http::timeout(30)->withHeaders([
@@ -262,25 +258,37 @@ class AiClinicalAssistantController extends Controller
             if (!$response->successful()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menghubungi AI (error ' . $response->status() . ').',
+                    'message' => 'Gagal menghubungi AI. Silakan coba lagi.',
                 ]);
             }
 
             $aiText = $response->json('candidates.0.content.parts.0.text') ?? 'AI tidak mengembalikan hasil.';
 
-            AiPesan::create([
-                'id_percakapan' => $id,
-                'role' => 'assistant',
-                'isi' => $aiText,
-            ]);
+            DB::transaction(function () use ($id, $pesanUser, $aiText, $percakapan) {
+                AiPesan::create([
+                    'id_percakapan' => $id,
+                    'role' => 'user',
+                    'isi' => $pesanUser,
+                ]);
 
-            $percakapan->touch();
+                AiPesan::create([
+                    'id_percakapan' => $id,
+                    'role' => 'assistant',
+                    'isi' => $aiText,
+                ]);
+
+                if (!$percakapan->judul) {
+                    $percakapan->update(['judul' => Str::limit($pesanUser, 50)]);
+                }
+
+                $percakapan->touch();
+            });
 
             return response()->json(['success' => true, 'balasan' => $aiText]);
 
         } catch (\Exception $e) {
             Log::error('Gemini Chat exception', ['message' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat memproses pesan. Silakan coba lagi.']);
         }
     }
 }

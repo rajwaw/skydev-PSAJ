@@ -2,10 +2,6 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Artisan;
-use App\Models\User;
 use App\Http\Controllers\PendaftaranController;
 use App\Http\Controllers\PasienController;
 use App\Http\Controllers\DashboardController;
@@ -21,12 +17,16 @@ use App\Http\Controllers\AiClinicalAssistantController;
 |--------------------------------------------------------------------------
 | LOGIN
 |--------------------------------------------------------------------------
+|
+| Login sekarang HANYA menggunakan Auth::attempt() standar Laravel.
+| Akun admin/pemilik klinik dibuat lewat seeder (php artisan db:seed),
+| BUKAN lewat hardcoded credential di route ini.
+|
 */
 
 // Halaman login
 Route::get('/login', function () {
 
-    // Kalau sudah login, langsung ke dashboard
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
@@ -46,94 +46,20 @@ Route::post('/login', function () {
 
     $remember = request()->boolean('remember');
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOGIN PEMILIK KLINIK
-    |--------------------------------------------------------------------------
-    |
-    | Mendukung akun khusus pemilik klinik (default: yudha@mandalacare.com).
-    | Jika berpindah device dan database belum dimigrasi atau akun belum ada,
-    | sistem secara otomatis memigrasi tabel dan membuat akun pemilik
-    | sehingga tidak perlu migrate / seed manual setiap kali pindah device.
-    |
-    */
+    if (Auth::attempt($credentials, $remember)) {
 
-    $ownerEmail = env('OWNER_EMAIL', 'yudha@mandalacare.com');
-    $ownerPassword = env('OWNER_PASSWORD', 'password');
-    $ownerName = env('OWNER_NAME', 'Yudha Tama');
+        request()->session()->regenerate();
 
-    // Daftar email yang dikenali sebagai akun pemilik
-    $recognizedEmails = array_map('strtolower', array_filter([
-        $ownerEmail,
-        'yudha@mandalacare.com',
-        'admin@mandalacare.com',
-    ]));
-
-    // Daftar password cadangan yang dapat digunakan pemilik saat pertama kali setup
-    $recognizedPasswords = array_filter([
-        $ownerPassword,
-        'password',
-        'mandalacare123',
-        'admin123',
-    ]);
-
-    $inputEmail = strtolower(trim($credentials['email']));
-    $inputPassword = $credentials['password'];
-
-    try {
-        // 1. Auto-Migrate: Cek apakah tabel users sudah ada. Jika belum (misal device baru), jalankan migrasi otomatis
-        if (!Schema::hasTable('users')) {
-            Artisan::call('migrate', ['--force' => true]);
-        }
-
-        // 2. Cek apakah login menggunakan akun khusus Pemilik Klinik
-        if (in_array($inputEmail, $recognizedEmails, true) && in_array($inputPassword, $recognizedPasswords, true)) {
-
-            // Auto-create jika akun belum ada di database device ini
-            $user = User::firstOrCreate(
-                ['email' => $inputEmail],
-                [
-                    'name' => $ownerName,
-                    'password' => Hash::make($inputPassword),
-                ]
-            );
-
-            // Update password hash jika password yang dimasukkan valid namun berbeda hash lama
-            if (!Hash::check($inputPassword, $user->password)) {
-                $user->update(['password' => Hash::make($inputPassword)]);
-            }
-
-            Auth::login($user, $remember);
-            request()->session()->regenerate();
-
-            return redirect()->intended('/');
-        }
-
-        // 3. Login autentikasi database standar (untuk akun yang sudah terdaftar dengan password kustom)
-        if (Auth::attempt($credentials, $remember)) {
-
-            // Regenerasi session untuk keamanan
-            request()->session()->regenerate();
-
-            return redirect()->intended('/');
-        }
-
-    } catch (\Throwable $e) {
-        return back()
-            ->withErrors([
-                'email' => 'Gagal menghubungkan ke database. Pastikan database MySQL aktif atau cek konfigurasi .env (' . $e->getMessage() . ')',
-            ])
-            ->onlyInput('email');
+        return redirect()->intended('/');
     }
 
-    // Kalau email/password salah
     return back()
         ->withErrors([
             'email' => 'Email atau password yang Anda masukkan salah.',
         ])
         ->onlyInput('email');
 
-})->name('login');
+})->middleware('throttle:5,1')->name('login');
 
 
 
@@ -147,7 +73,6 @@ Route::get('/', [DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
 
-// Redirect dari /dashboard ke halaman utama (agar link /dashboard tidak 404)
 Route::get('/dashboard', function () {
     return redirect()->route('dashboard');
 })->middleware('auth');
@@ -161,11 +86,8 @@ Route::get('/dashboard', function () {
 */
 
 Route::get('/pendaftaran', function () {
-
     return view('pendaftaran');
-
 })->middleware('auth')->name('pendaftaran');
-
 
 Route::post('/pendaftaran', [PendaftaranController::class, 'store'])
     ->middleware('auth')
@@ -248,14 +170,21 @@ Route::get('/evaluasi/pasien/{id}', [EvaluasiController::class, 'getPasienDetail
 |--------------------------------------------------------------------------
 | AI CLINICAL ASSISTANT
 |--------------------------------------------------------------------------
+|
+| Semua route AI sekarang dilindungi middleware 'auth'. Sebelumnya route
+| ini bisa diakses publik tanpa login sama sekali.
+|
 */
-Route::get('/ai-clinical-assistant', [AiClinicalAssistantController::class, 'index'])->name('ai-clinical-assistant');
-Route::get('/ai-clinical-assistant/pasien/{id}', [AiClinicalAssistantController::class, 'getSummary'])->name('ai-clinical-assistant.summary');
-Route::get('/ai-clinical-assistant/pasien/{id}/grafik', [AiClinicalAssistantController::class, 'getGrafikData'])->name('ai-clinical-assistant.grafik');
-Route::get('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'daftarPercakapan'])->name('ai-clinical-assistant.percakapan.index');
-Route::post('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'buatPercakapan'])->name('ai-clinical-assistant.percakapan.store');
-Route::get('/ai-clinical-assistant/percakapan/{id}', [AiClinicalAssistantController::class, 'getPercakapan'])->name('ai-clinical-assistant.percakapan.show');
-Route::post('/ai-clinical-assistant/percakapan/{id}/pesan', [AiClinicalAssistantController::class, 'kirimPesan'])->name('ai-clinical-assistant.percakapan.pesan');    
+
+Route::middleware('auth')->group(function () {
+    Route::get('/ai-clinical-assistant', [AiClinicalAssistantController::class, 'index'])->name('ai-clinical-assistant');
+    Route::get('/ai-clinical-assistant/pasien/{id}', [AiClinicalAssistantController::class, 'getSummary'])->name('ai-clinical-assistant.summary');
+    Route::get('/ai-clinical-assistant/pasien/{id}/grafik', [AiClinicalAssistantController::class, 'getGrafikData'])->name('ai-clinical-assistant.grafik');
+    Route::get('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'daftarPercakapan'])->name('ai-clinical-assistant.percakapan.index');
+    Route::post('/ai-clinical-assistant/percakapan', [AiClinicalAssistantController::class, 'buatPercakapan'])->name('ai-clinical-assistant.percakapan.store');
+    Route::get('/ai-clinical-assistant/percakapan/{id}', [AiClinicalAssistantController::class, 'getPercakapan'])->name('ai-clinical-assistant.percakapan.show');
+    Route::post('/ai-clinical-assistant/percakapan/{id}/pesan', [AiClinicalAssistantController::class, 'kirimPesan'])->name('ai-clinical-assistant.percakapan.pesan');
+});
 
 /*
 |--------------------------------------------------------------------------
