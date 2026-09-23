@@ -75,10 +75,13 @@ class RekamMedisController extends Controller
             }
         }
 
+        $latestAsuhan = $riwayatKunjungan->isNotEmpty() ? $riwayatKunjungan->first()->asuhanMedis : null;
+
         return view('rekam-medis', compact(
             'daftarPasien',
             'selectedPasien',
             'riwayatKunjungan',
+            'latestAsuhan',
             'alergiText',
             'lastVisitDate',
             'search'
@@ -136,6 +139,9 @@ class RekamMedisController extends Controller
                     'nadi' => $asuhan && $asuhan->nadi ? $asuhan->nadi : '80',
                     'rr' => $asuhan && $asuhan->rr ? $asuhan->rr : '20',
                     'spo2' => $asuhan && $asuhan->spo2 ? $asuhan->spo2 : '98',
+                    'tb' => $asuhan && $asuhan->tinggi_badan ? $asuhan->tinggi_badan : null,
+                    'bb' => $asuhan && $asuhan->berat_badan ? $asuhan->berat_badan : null,
+                    'imt' => $asuhan ? $asuhan->imt : null,
                 ],
                 'diagnosa' => $intervensiList->isNotEmpty() && $intervensiList->first()->diagnosa_awal 
                     ? $intervensiList->first()->diagnosa_awal 

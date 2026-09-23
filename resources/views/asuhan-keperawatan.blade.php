@@ -385,7 +385,7 @@
                         Tanda-tanda Vital
                     </h4>
 
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
                         <!-- TD -->
                         <div class="bg-surface-container-low/50 p-2.5 rounded-xl border border-outline-variant/60">
                             <label class="block text-xs font-semibold text-on-surface-variant mb-1">
@@ -444,7 +444,7 @@
                         </div>
 
                         <!-- SpO2 -->
-                        <div class="col-span-2 sm:col-span-1 bg-surface-container-low/50 p-2.5 rounded-xl border border-outline-variant/60">
+                        <div class="bg-surface-container-low/50 p-2.5 rounded-xl border border-outline-variant/60">
                             <label class="block text-xs font-semibold text-on-surface-variant mb-1">
                                 SpO2 (%)
                             </label>
@@ -456,6 +456,63 @@
                                 placeholder=""
                                 class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
                         </div>
+
+                        <!-- Tinggi Badan (TB) -->
+                        <div class="bg-surface-container-low/50 p-2.5 rounded-xl border border-outline-variant/60">
+                            <label class="block text-xs font-semibold text-on-surface-variant mb-1">
+                                TB (cm)
+                            </label>
+                            <input
+                                id="inputTB"
+                                type="number"
+                                step="0.1"
+                                name="tinggi_badan"
+                                value="{{ $latestAsuhan ? $latestAsuhan->tinggi_badan : '' }}"
+                                placeholder=""
+                                class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
+                        </div>
+
+                        <!-- Berat Badan (BB) -->
+                        <div class="col-span-2 sm:col-span-1 bg-surface-container-low/50 p-2.5 rounded-xl border border-outline-variant/60">
+                            <label class="block text-xs font-semibold text-on-surface-variant mb-1">
+                                BB (kg)
+                            </label>
+                            <input
+                                id="inputBB"
+                                type="number"
+                                step="0.1"
+                                name="berat_badan"
+                                value="{{ $latestAsuhan ? $latestAsuhan->berat_badan : '' }}"
+                                placeholder=""
+                                class="w-full bg-white border border-outline-variant rounded-lg p-2 text-center text-sm font-semibold text-on-surface input-ring">
+                        </div>
+                    </div>
+
+                    <!-- Indeks Massa Tubuh (IMT / BMI) Preview Card -->
+                    <div id="imtCard" class="mt-3 p-3 bg-surface-container-low/60 rounded-xl border border-outline-variant/60 flex flex-wrap items-center justify-between gap-2 {{ ($latestAsuhan && $latestAsuhan->imt) ? '' : 'hidden' }}">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-700 text-lg">monitor_weight</span>
+                            <div class="flex items-center flex-wrap gap-1.5">
+                                <span class="text-xs font-semibold text-on-surface-variant">Indeks Massa Tubuh (IMT):</span>
+                                <span id="labelImtValue" class="text-sm font-bold text-purple-700">
+                                    {{ $latestAsuhan ? $latestAsuhan->imt : '-' }}
+                                </span>
+                                <span id="labelImtStatus" class="px-2 py-0.5 rounded-full text-xs font-bold {{ $latestAsuhan && $latestAsuhan->imt ? ($latestAsuhan->imt < 18.5 ? 'bg-amber-100 text-amber-800 border border-amber-200' : ($latestAsuhan->imt <= 24.9 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : ($latestAsuhan->imt <= 29.9 ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-red-100 text-red-800 border border-red-200'))) : '' }}">
+                                    @if($latestAsuhan && $latestAsuhan->imt)
+                                        @if($latestAsuhan->imt < 18.5)
+                                            Berat Kurang
+                                        @elseif($latestAsuhan->imt <= 24.9)
+                                            Normal / Ideal
+                                        @elseif($latestAsuhan->imt <= 29.9)
+                                            Kelebihan Berat
+                                        @else
+                                            Obesitas
+                                        @endif
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <span class="text-[11px] text-on-surface-variant italic">Kalkulasi otomatis dari TB &amp; BB</span>
                     </div>
                 </section>
 
@@ -775,6 +832,20 @@
                             </p>
                         </div>
 
+                        <div>
+                            <p class="text-xs text-on-surface-variant font-medium">TB / BB</p>
+                            <p id="summaryTBBB" class="text-sm font-semibold text-on-surface mt-0.5">
+                                @if($latestAsuhan && ($latestAsuhan->tinggi_badan || $latestAsuhan->berat_badan))
+                                    {{ $latestAsuhan->tinggi_badan ? $latestAsuhan->tinggi_badan . ' cm' : '-' }} / {{ $latestAsuhan->berat_badan ? $latestAsuhan->berat_badan . ' kg' : '-' }}
+                                    @if($latestAsuhan->imt)
+                                        <span class="text-purple-700 text-xs font-bold">(IMT: {{ $latestAsuhan->imt }})</span>
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
+
                         <div class="pt-3 border-t border-outline-variant/60 text-xs text-on-surface-variant flex items-center gap-1">
                             <span class="material-symbols-outlined text-[14px]">schedule</span>
                             <span id="summaryTimestamp">Terakhir: {{ ($selectedPasien && $latestAsuhan && $latestAsuhan->updated_at) ? \Carbon\Carbon::parse($latestAsuhan->updated_at)->timezone('Asia/Jakarta')->translatedFormat('H:i') : \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('H:i') }} WIB</span>
@@ -1016,6 +1087,8 @@ function selectPasienById(id) {
             document.getElementById('inputSuhu').value = asuhan.suhu_tubuh || '';
             document.getElementById('inputRR').value = asuhan.rr || '';
             document.getElementById('inputSpO2').value = asuhan.spo2 || '';
+            document.getElementById('inputTB').value = asuhan.tinggi_badan || '';
+            document.getElementById('inputBB').value = asuhan.berat_badan || '';
         } else {
             document.getElementById('inputKeluhanUtama').value = '';
             document.getElementById('inputRiwayatKeluhan').value = '';
@@ -1026,7 +1099,11 @@ function selectPasienById(id) {
             document.getElementById('inputSuhu').value = '';
             document.getElementById('inputRR').value = '';
             document.getElementById('inputSpO2').value = '';
+            document.getElementById('inputTB').value = '';
+            document.getElementById('inputBB').value = '';
         }
+
+        updateIMTCalculation();
 
         // 6. Prefill Diagnosis & Intervensi
         const firstIntervensi = intervensi && intervensi.length > 0 ? intervensi[0] : null;
@@ -1489,6 +1566,65 @@ function submitFormAsuhan(event) {
 }
 
 // =====================================
+// KALKULASI IMT (INDEKS MASSA TUBUH)
+// =====================================
+function updateIMTCalculation() {
+    const tbEl = document.getElementById('inputTB');
+    const bbEl = document.getElementById('inputBB');
+    const tb = parseFloat(tbEl ? tbEl.value : '');
+    const bb = parseFloat(bbEl ? bbEl.value : '');
+    const imtCard = document.getElementById('imtCard');
+    const labelVal = document.getElementById('labelImtValue');
+    const labelStatus = document.getElementById('labelImtStatus');
+    const summaryTBBB = document.getElementById('summaryTBBB');
+
+    let imtFormatted = null;
+
+    if (!isNaN(tb) && !isNaN(bb) && tb > 0 && bb > 0) {
+        const tbM = tb / 100;
+        const imt = (bb / (tbM * tbM)).toFixed(1);
+        imtFormatted = imt;
+
+        if (labelVal && labelStatus && imtCard) {
+            labelVal.textContent = imt;
+
+            let statusText = '';
+            let statusClass = '';
+            if (imt < 18.5) {
+                statusText = 'Berat Kurang';
+                statusClass = 'bg-amber-100 text-amber-800 border border-amber-200';
+            } else if (imt <= 24.9) {
+                statusText = 'Normal / Ideal';
+                statusClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+            } else if (imt <= 29.9) {
+                statusText = 'Kelebihan Berat';
+                statusClass = 'bg-orange-100 text-orange-800 border border-orange-200';
+            } else {
+                statusText = 'Obesitas';
+                statusClass = 'bg-red-100 text-red-800 border border-red-200';
+            }
+            labelStatus.textContent = statusText;
+            labelStatus.className = 'px-2 py-0.5 rounded-full text-xs font-bold ' + statusClass;
+            imtCard.classList.remove('hidden');
+        }
+    } else {
+        if (imtCard) imtCard.classList.add('hidden');
+    }
+
+    if (summaryTBBB) {
+        if ((!isNaN(tb) && tb > 0) || (!isNaN(bb) && bb > 0)) {
+            let str = `${!isNaN(tb) && tb > 0 ? tb + ' cm' : '-'} / ${!isNaN(bb) && bb > 0 ? bb + ' kg' : '-'}`;
+            if (imtFormatted) {
+                str += ` <span class="text-purple-700 text-xs font-bold">(IMT: ${imtFormatted})</span>`;
+            }
+            summaryTBBB.innerHTML = str;
+        } else {
+            summaryTBBB.textContent = '-';
+        }
+    }
+}
+
+// =====================================
 // MODAL RESET FORM HANDLERS
 // =====================================
 function openResetModal() {
@@ -1555,6 +1691,13 @@ document.addEventListener('DOMContentLoaded', () => {
         inputPrioritasEl.addEventListener('input', syncPrioritasReminder);
     }
     syncPrioritasReminder();
+
+    // Event listener real-time kalkulasi IMT saat TB atau BB diubah
+    const inputTBEl = document.getElementById('inputTB');
+    const inputBBEl = document.getElementById('inputBB');
+    if (inputTBEl) inputTBEl.addEventListener('input', updateIMTCalculation);
+    if (inputBBEl) inputBBEl.addEventListener('input', updateIMTCalculation);
+    updateIMTCalculation();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -1580,6 +1723,9 @@ function confirmResetFormAsuhan() {
     document.getElementById('inputSuhu').value = '';
     document.getElementById('inputRR').value = '';
     document.getElementById('inputSpO2').value = '';
+    document.getElementById('inputTB').value = '';
+    document.getElementById('inputBB').value = '';
+    updateIMTCalculation();
     document.getElementById('inputDiagnosaAwal').value = '';
     document.getElementById('inputFaktorTerkait').value = '';
     document.getElementById('inputPrioritasDiagnosa').value = '';

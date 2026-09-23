@@ -109,6 +109,9 @@ class AiClinicalAssistantController extends Controller
                     'nadi' => $asuhan->nadi !== null ? (float) $asuhan->nadi : null,
                     'suhu' => $asuhan->suhu_tubuh !== null ? (float) $asuhan->suhu_tubuh : null,
                     'spo2' => $asuhan->spo2 !== null ? (float) $asuhan->spo2 : null,
+                    'tb' => $asuhan->tinggi_badan !== null ? (float) $asuhan->tinggi_badan : null,
+                    'bb' => $asuhan->berat_badan !== null ? (float) $asuhan->berat_badan : null,
+                    'imt' => $asuhan->imt !== null ? (float) $asuhan->imt : null,
                 ];
             }
 
@@ -165,7 +168,14 @@ class AiClinicalAssistantController extends Controller
 
                 if ($rm->asuhanMedis) {
                     $text .= "  Keluhan Utama: {$rm->asuhanMedis->keluhan_utama}\n";
-                    $text .= "  Tekanan Darah: {$rm->asuhanMedis->tekanan_darah}, Nadi: {$rm->asuhanMedis->nadi}, Suhu: {$rm->asuhanMedis->suhu_tubuh}, SpO2: {$rm->asuhanMedis->spo2}\n";
+                    $text .= "  Tekanan Darah: {$rm->asuhanMedis->tekanan_darah}, Nadi: {$rm->asuhanMedis->nadi}, Suhu: {$rm->asuhanMedis->suhu_tubuh}, SpO2: {$rm->asuhanMedis->spo2}";
+                    if ($rm->asuhanMedis->tinggi_badan || $rm->asuhanMedis->berat_badan) {
+                        $text .= ", TB: " . ($rm->asuhanMedis->tinggi_badan ?? '-') . " cm, BB: " . ($rm->asuhanMedis->berat_badan ?? '-') . " kg";
+                        if ($rm->asuhanMedis->imt) {
+                            $text .= " (IMT: {$rm->asuhanMedis->imt})";
+                        }
+                    }
+                    $text .= "\n";
                 }
 
                 if ($rm->intervensi && $rm->intervensi->isNotEmpty()) {

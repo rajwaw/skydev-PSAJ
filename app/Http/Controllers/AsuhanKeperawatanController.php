@@ -152,6 +152,8 @@ class AsuhanKeperawatanController extends Controller
             'suhu_tubuh' => 'nullable|numeric',
             'rr' => 'nullable|numeric',
             'spo2' => 'nullable|numeric',
+            'tinggi_badan' => 'nullable|numeric|min:0',
+            'berat_badan' => 'nullable|numeric|min:0',
             'diagnosa_awal' => 'nullable|string',
             'faktor_terkait' => 'nullable|string',
             'daftar_diagnosa' => 'nullable',
@@ -241,6 +243,8 @@ class AsuhanKeperawatanController extends Controller
                     'suhu_tubuh' => $request->suhu_tubuh,
                     'rr' => $request->rr,
                     'spo2' => $request->spo2,
+                    'tinggi_badan' => $request->tinggi_badan,
+                    'berat_badan' => $request->berat_badan,
                 ]
             );
 

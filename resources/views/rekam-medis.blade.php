@@ -143,6 +143,20 @@
                             {{ $lastVisitDate }}
                         </span>
                     </div>
+
+                    <div class="flex justify-between border-b border-outline-variant/60 pb-2">
+                        <span class="text-on-surface-variant">TB / BB</span>
+                        <span id="selectedTBBB" class="font-semibold text-on-surface">
+                            @if($latestAsuhan && ($latestAsuhan->tinggi_badan || $latestAsuhan->berat_badan))
+                                {{ $latestAsuhan->tinggi_badan ? $latestAsuhan->tinggi_badan . ' cm' : '-' }} / {{ $latestAsuhan->berat_badan ? $latestAsuhan->berat_badan . ' kg' : '-' }}
+                                @if($latestAsuhan->imt)
+                                    <span class="text-purple-700 text-xs font-bold">(IMT: {{ $latestAsuhan->imt }})</span>
+                                @endif
+                            @else
+                                -
+                            @endif
+                        </span>
+                    </div>
                 </div>
 
                 <div class="flex flex-col gap-2 mt-auto">
@@ -283,6 +297,21 @@
                                                     @if($asuhan && $asuhan->spo2)
                                                         <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 border border-blue-200">
                                                             SpO2: {{ $asuhan->spo2 }}%
+                                                        </span>
+                                                    @endif
+                                                    @if($asuhan && $asuhan->tinggi_badan)
+                                                        <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                                            TB: {{ $asuhan->tinggi_badan }} cm
+                                                        </span>
+                                                    @endif
+                                                    @if($asuhan && $asuhan->berat_badan)
+                                                        <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                                            BB: {{ $asuhan->berat_badan }} kg
+                                                        </span>
+                                                    @endif
+                                                    @if($asuhan && $asuhan->imt)
+                                                        <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">
+                                                            IMT: {{ $asuhan->imt }}
                                                         </span>
                                                     @endif
                                                 </div>
@@ -501,6 +530,18 @@ function selectPasienRM(id) {
         }
 
         document.getElementById('selectedLastVisit').textContent = p.last_visit;
+        const tbbbElem = document.getElementById('selectedTBBB');
+        if (tbbbElem) {
+            if (riwayat && riwayat.length > 0 && (riwayat[0].tanda_vital.tb || riwayat[0].tanda_vital.bb)) {
+                let txt = `${riwayat[0].tanda_vital.tb ? riwayat[0].tanda_vital.tb + ' cm' : '-'} / ${riwayat[0].tanda_vital.bb ? riwayat[0].tanda_vital.bb + ' kg' : '-'}`;
+                if (riwayat[0].tanda_vital.imt) {
+                    txt += ` <span class="text-purple-700 text-xs font-bold">(IMT: ${riwayat[0].tanda_vital.imt})</span>`;
+                }
+                tbbbElem.innerHTML = txt;
+            } else {
+                tbbbElem.textContent = '-';
+            }
+        }
         document.getElementById('headerPatientName').textContent = p.nama_lengkap;
 
         // Update URLs
@@ -615,6 +656,9 @@ function selectPasienRM(id) {
                                         RR: ${item.tanda_vital.rr} x/m
                                     </span>
                                     ${item.tanda_vital.spo2 ? `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 border border-blue-200">SpO2: ${item.tanda_vital.spo2}%</span>` : ''}
+                                    ${item.tanda_vital.tb ? `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">TB: ${item.tanda_vital.tb} cm</span>` : ''}
+                                    ${item.tanda_vital.bb ? `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">BB: ${item.tanda_vital.bb} kg</span>` : ''}
+                                    ${item.tanda_vital.imt ? `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">IMT: ${item.tanda_vital.imt}</span>` : ''}
                                 </div>
                             </div>
                         </div>

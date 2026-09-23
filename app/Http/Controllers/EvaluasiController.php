@@ -133,6 +133,16 @@ class EvaluasiController extends Controller
                 'intervensi'    => $latestIntervensi->isNotEmpty()
                     ? $latestIntervensi->pluck('rencana_tindakan')->filter()->join('; ')
                     : '-',
+                'tanda_vital'   => [
+                    'td'   => $latestAsuhan && $latestAsuhan->tekanan_darah ? $latestAsuhan->tekanan_darah : null,
+                    'suhu' => $latestAsuhan && $latestAsuhan->suhu_tubuh ? $latestAsuhan->suhu_tubuh : null,
+                    'nadi' => $latestAsuhan && $latestAsuhan->nadi ? $latestAsuhan->nadi : null,
+                    'rr'   => $latestAsuhan && $latestAsuhan->rr ? $latestAsuhan->rr : null,
+                    'spo2' => $latestAsuhan && $latestAsuhan->spo2 ? $latestAsuhan->spo2 : null,
+                    'tb'   => $latestAsuhan && $latestAsuhan->tinggi_badan ? $latestAsuhan->tinggi_badan : null,
+                    'bb'   => $latestAsuhan && $latestAsuhan->berat_badan ? $latestAsuhan->berat_badan : null,
+                    'imt'  => $latestAsuhan ? $latestAsuhan->imt : null,
+                ],
             ],
             'implementasi' => $latestImplementasi ? [
                 'id_implementasi'    => $latestImplementasi->id_implementasi,

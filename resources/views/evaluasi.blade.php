@@ -136,6 +136,60 @@
                         <p class="text-xs text-on-surface-variant mb-1 font-medium">Rencana Intervensi</p>
                         <p id="summaryIntervensi" class="text-sm font-semibold text-on-surface">{{ $latestIntervensi->isNotEmpty() ? $latestIntervensi->pluck('rencana_tindakan')->filter()->join('; ') : '-' }}</p>
                     </div>
+
+                    {{-- Tanda Vital & Pengukuran Fisik --}}
+                    <div class="md:col-span-2 bg-surface p-4 rounded-xl border border-outline-variant/60">
+                        <p class="text-xs text-on-surface-variant mb-2 font-medium flex items-center gap-1.5 text-primary">
+                            <span class="material-symbols-outlined text-[16px]">vital_signs</span>
+                            Tanda Vital &amp; Fisik
+                        </p>
+                        <div id="summaryVitalSigns" class="flex flex-wrap gap-1.5">
+                            @if($latestAsuhan && ($latestAsuhan->tekanan_darah || $latestAsuhan->suhu_tubuh || $latestAsuhan->nadi || $latestAsuhan->rr || $latestAsuhan->spo2 || $latestAsuhan->tinggi_badan || $latestAsuhan->berat_badan))
+                                @if($latestAsuhan->tekanan_darah)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">
+                                        TD: {{ $latestAsuhan->tekanan_darah }}
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->suhu_tubuh)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-red-600 border border-red-200">
+                                        Suhu: {{ $latestAsuhan->suhu_tubuh }}°C
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->nadi)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">
+                                        Nadi: {{ $latestAsuhan->nadi }} x/m
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->rr)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">
+                                        RR: {{ $latestAsuhan->rr }} x/m
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->spo2)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 border border-blue-200">
+                                        SpO2: {{ $latestAsuhan->spo2 }}%
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->tinggi_badan)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                        TB: {{ $latestAsuhan->tinggi_badan }} cm
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->berat_badan)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">
+                                        BB: {{ $latestAsuhan->berat_badan }} kg
+                                    </span>
+                                @endif
+                                @if($latestAsuhan->imt)
+                                    <span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">
+                                        IMT: {{ $latestAsuhan->imt }}
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-xs text-on-surface-variant italic">Belum ada data tanda vital</span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -242,6 +296,19 @@
                             <span class="text-xs text-on-surface-variant">Status</span>
                             <span id="infoBadge" class="text-xs font-semibold px-2 py-0.5 rounded-full {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? 'bg-amber-100 text-amber-800' : 'bg-surface-container text-on-surface-variant' }}">
                                 {{ ($selectedPasien && $selectedPasien->pendaftaranTerbaru) ? $selectedPasien->pendaftaranTerbaru->status_kunjungan : '-' }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-on-surface-variant">TB / BB</span>
+                            <span id="infoTBBB" class="text-xs font-semibold text-on-surface">
+                                @if($latestAsuhan && ($latestAsuhan->tinggi_badan || $latestAsuhan->berat_badan))
+                                    {{ $latestAsuhan->tinggi_badan ? $latestAsuhan->tinggi_badan . ' cm' : '-' }} / {{ $latestAsuhan->berat_badan ? $latestAsuhan->berat_badan . ' kg' : '-' }}
+                                    @if($latestAsuhan->imt)
+                                        <span class="text-purple-700 text-xs font-bold">(IMT: {{ $latestAsuhan->imt }})</span>
+                                    @endif
+                                @else
+                                    -
+                                @endif
                             </span>
                         </div>
                     </div>
@@ -389,6 +456,38 @@ function selectPasien(id) {
                 }
             }
             document.getElementById('summaryIntervensi').textContent = r.intervensi || '-';
+
+            const tv = r.tanda_vital;
+            const containerVital = document.getElementById('summaryVitalSigns');
+            if (containerVital) {
+                if (tv && (tv.td || tv.suhu || tv.nadi || tv.rr || tv.spo2 || tv.tb || tv.bb)) {
+                    let html = '';
+                    if (tv.td)   html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">TD: ${tv.td}</span>`;
+                    if (tv.suhu) html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-red-600 border border-red-200">Suhu: ${tv.suhu}°C</span>`;
+                    if (tv.nadi) html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">Nadi: ${tv.nadi} x/m</span>`;
+                    if (tv.rr)   html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-on-surface border border-outline-variant/60">RR: ${tv.rr} x/m</span>`;
+                    if (tv.spo2) html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 border border-blue-200">SpO2: ${tv.spo2}%</span>`;
+                    if (tv.tb)   html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">TB: ${tv.tb} cm</span>`;
+                    if (tv.bb)   html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">BB: ${tv.bb} kg</span>`;
+                    if (tv.imt)  html += `<span class="bg-white px-2.5 py-1 rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">IMT: ${tv.imt}</span>`;
+                    containerVital.innerHTML = html;
+                } else {
+                    containerVital.innerHTML = '<span class="text-xs text-on-surface-variant italic">Belum ada data tanda vital</span>';
+                }
+            }
+
+            const infoTBBB = document.getElementById('infoTBBB');
+            if (infoTBBB) {
+                if (tv && (tv.tb || tv.bb)) {
+                    let txt = `${tv.tb ? tv.tb + ' cm' : '-'} / ${tv.bb ? tv.bb + ' kg' : '-'}`;
+                    if (tv.imt) {
+                        txt += ` <span class="text-purple-700 text-xs font-bold">(IMT: ${tv.imt})</span>`;
+                    }
+                    infoTBBB.innerHTML = txt;
+                } else {
+                    infoTBBB.textContent = '-';
+                }
+            }
 
             document.getElementById('hidden_id_pasien').value      = p.id_pasien;
             document.getElementById('hidden_id_rekam_medis').value = p.id_rekam_medis || '';
