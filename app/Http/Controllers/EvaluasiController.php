@@ -157,6 +157,11 @@ class EvaluasiController extends Controller
                 'respon_pasien'            => $latestEvaluasi->respon_pasien,
                 'hasil_evaluasi'           => $latestEvaluasi->hasil_evaluasi,
                 'rencana_selanjutnya'      => $latestEvaluasi->rencana_selanjutnya,
+                'catatan_soap'             => $latestEvaluasi->catatan_soap,
+                'soap_s'                   => $latestEvaluasi->soap_s,
+                'soap_o'                   => $latestEvaluasi->soap_o,
+                'soap_a'                   => $latestEvaluasi->soap_a,
+                'soap_p'                   => $latestEvaluasi->soap_p,
             ] : null,
         ]);
     }
@@ -177,6 +182,10 @@ class EvaluasiController extends Controller
             'respon_pasien'            => 'nullable|string',
             'hasil_evaluasi'           => 'nullable|string',
             'rencana_selanjutnya'      => 'nullable|string',
+            'soap_s'                   => 'nullable|string',
+            'soap_o'                   => 'nullable|string',
+            'soap_a'                   => 'nullable|string',
+            'soap_p'                   => 'nullable|string',
         ]);
 
         try {
@@ -193,16 +202,39 @@ class EvaluasiController extends Controller
                 );
             }
 
+            // Bangun ringkasan SOAP jika form SOAP diisi
+            $soapS = $request->soap_s;
+            $soapO = $request->soap_o;
+            $soapA = $request->soap_a;
+            $soapP = $request->soap_p;
+
+            $soapLines = [];
+            if ($soapS) $soapLines[] = "S: " . trim($soapS);
+            if ($soapO) $soapLines[] = "O: " . trim($soapO);
+            if ($soapA) $soapLines[] = "A: " . trim($soapA);
+            if ($soapP) $soapLines[] = "P: " . trim($soapP);
+            $soapCombined = !empty($soapLines) ? implode("\n", $soapLines) : null;
+
+            $hasilEvaluasi = $request->hasil_evaluasi ?: $soapCombined;
+            $catatanSoap   = $soapCombined ?: $request->catatan_soap;
+            $rencanaSelanjutnya = $request->rencana_selanjutnya ?: $soapP;
+            $keluhanSetelahTindakan = $request->keluhan_setelah_tindakan ?: $soapS;
+
             // Simpan / update Evaluasi
             Evaluasi::updateOrCreate(
                 ['id_rekam_medis' => $request->id_rekam_medis],
                 [
                     'status_kondisi'           => $request->status_kondisi,
                     'status_evaluasi'          => $request->status_evaluasi,
-                    'keluhan_setelah_tindakan' => $request->keluhan_setelah_tindakan,
+                    'keluhan_setelah_tindakan' => $keluhanSetelahTindakan,
                     'respon_pasien'            => $request->respon_pasien,
-                    'hasil_evaluasi'           => $request->hasil_evaluasi,
-                    'rencana_selanjutnya'      => $request->rencana_selanjutnya,
+                    'hasil_evaluasi'           => $hasilEvaluasi,
+                    'rencana_selanjutnya'      => $rencanaSelanjutnya,
+                    'catatan_soap'             => $catatanSoap,
+                    'soap_s'                   => $soapS,
+                    'soap_o'                   => $soapO,
+                    'soap_a'                   => $soapA,
+                    'soap_p'                   => $soapP,
                 ]
             );
 

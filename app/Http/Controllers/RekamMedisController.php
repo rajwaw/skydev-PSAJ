@@ -159,6 +159,11 @@ class RekamMedisController extends Controller
                     'respon_pasien' => $evaluasi->respon_pasien ?: '-',
                     'hasil_evaluasi' => $evaluasi->hasil_evaluasi ?: '-',
                     'rencana_selanjutnya' => $evaluasi->rencana_selanjutnya ?: '-',
+                    'catatan_soap' => $evaluasi->catatan_soap ?: null,
+                    'soap_s' => $evaluasi->soap_s ?: null,
+                    'soap_o' => $evaluasi->soap_o ?: null,
+                    'soap_a' => $evaluasi->soap_a ?: null,
+                    'soap_p' => $evaluasi->soap_p ?: null,
                 ] : null,
                 'soap' => [
                     'assessment' => $intervensiList->isNotEmpty() && $intervensiList->first()->diagnosa_awal 

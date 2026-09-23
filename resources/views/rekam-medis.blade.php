@@ -376,33 +376,34 @@
                                         @endif
 
                                         @if($evaluasi)
-                                            <div class="bg-[#F8FAFC] rounded-xl p-3.5 sm:p-4 border border-outline-variant/60 mt-3">
-                                                <h5 class="text-xs font-bold text-on-surface mb-2 flex items-center gap-1.5">
-                                                    <span class="material-symbols-outlined text-primary text-base">rate_review</span>
-                                                    Evaluasi Tindakan (SOAP)
-                                                </h5>
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm mb-2">
-                                                    <div>
-                                                        <p class="text-xs font-bold text-on-surface-variant">Kondisi &amp; Status:</p>
-                                                        <p class="text-on-surface font-medium mt-0.5">
-                                                            Kondisi: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700">{{ $evaluasi->status_kondisi }}</span> &bull; 
-                                                            Status: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">{{ $evaluasi->status_evaluasi }}</span>
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p class="text-xs font-bold text-on-surface-variant">Keluhan Setelah Tindakan:</p>
-                                                        <p class="text-on-surface font-medium mt-0.5">{{ $evaluasi->keluhan_setelah_tindakan ?: '-' }}</p>
+                                            <div class="bg-surface-container-low rounded-xl p-3.5 border border-outline-variant/60 mt-3">
+                                                <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-outline-variant/40">
+                                                    <h5 class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                                                        <span class="material-symbols-outlined text-primary text-[17px]">rate_review</span>
+                                                        Evaluasi (SOAP)
+                                                    </h5>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">{{ $evaluasi->status_kondisi }}</span>
+                                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">{{ $evaluasi->status_evaluasi }}</span>
                                                     </div>
                                                 </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-2 border-t border-outline-variant/40">
-                                                    <div>
-                                                        <p class="text-xs font-bold text-on-surface-variant">Respons Pasien:</p>
-                                                        <p class="text-on-surface font-medium mt-0.5">{{ $evaluasi->respon_pasien ?: '-' }}</p>
+
+                                                <div class="space-y-2 text-xs sm:text-sm">
+                                                    <div class="flex items-start gap-2.5">
+                                                        <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">S</span>
+                                                        <p class="text-on-surface font-medium leading-relaxed">{{ $evaluasi->soap_s ?: ($evaluasi->keluhan_setelah_tindakan ?: '-') }}</p>
                                                     </div>
-                                                    <div>
-                                                        <p class="text-xs font-bold text-on-surface-variant">Hasil Evaluasi:</p>
-                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $evaluasi->hasil_evaluasi ?: '-' }}</p>
-                                                        <p class="text-xs text-on-surface-variant mt-1.5 font-medium"><span class="text-secondary font-bold">Rencana Lanjut:</span> {{ $evaluasi->rencana_selanjutnya ?: '-' }}</p>
+                                                    <div class="flex items-start gap-2.5">
+                                                        <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">O</span>
+                                                        <p class="text-on-surface font-medium leading-relaxed">{{ $evaluasi->soap_o ?: ($evaluasi->respon_pasien ?: '-') }}</p>
+                                                    </div>
+                                                    <div class="flex items-start gap-2.5">
+                                                        <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">A</span>
+                                                        <p class="text-on-surface font-medium leading-relaxed">{{ $evaluasi->soap_a ?: ($evaluasi->hasil_evaluasi ?: '-') }}</p>
+                                                    </div>
+                                                    <div class="flex items-start gap-2.5">
+                                                        <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">P</span>
+                                                        <p class="text-on-surface font-medium leading-relaxed">{{ $evaluasi->soap_p ?: ($evaluasi->rencana_selanjutnya ?: '-') }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -711,33 +712,34 @@ function selectPasienRM(id) {
                         ` : ''}
 
                         ${item.evaluasi ? `
-                        <div class="bg-[#F8FAFC] rounded-xl p-3.5 sm:p-4 border border-outline-variant/60 mt-3">
-                            <h5 class="text-xs font-bold text-on-surface mb-2 flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-primary text-base">rate_review</span>
-                                Evaluasi Tindakan (SOAP)
-                            </h5>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm mb-2">
-                                <div>
-                                    <p class="text-xs font-bold text-on-surface-variant">Kondisi &amp; Status:</p>
-                                    <p class="text-on-surface font-medium mt-0.5">
-                                        Kondisi: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700">${item.evaluasi.status_kondisi}</span> &bull; 
-                                        Status: <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700">${item.evaluasi.status_evaluasi}</span>
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-on-surface-variant">Keluhan Setelah Tindakan:</p>
-                                    <p class="text-on-surface font-medium mt-0.5">${item.evaluasi.keluhan_setelah_tindakan}</p>
+                        <div class="bg-surface-container-low rounded-xl p-3.5 border border-outline-variant/60 mt-3">
+                            <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-outline-variant/40">
+                                <h5 class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-primary text-[17px]">rate_review</span>
+                                    Evaluasi (SOAP)
+                                </h5>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-50 text-green-700 border border-green-200">${item.evaluasi.status_kondisi}</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">${item.evaluasi.status_evaluasi}</span>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm pt-2 border-t border-outline-variant/40">
-                                <div>
-                                    <p class="text-xs font-bold text-on-surface-variant">Respons Pasien:</p>
-                                    <p class="text-on-surface font-medium mt-0.5">${item.evaluasi.respon_pasien}</p>
+
+                            <div class="space-y-2 text-xs sm:text-sm">
+                                <div class="flex items-start gap-2.5">
+                                    <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">S</span>
+                                    <p class="text-on-surface font-medium leading-relaxed">${escapeHtml(item.evaluasi.soap_s || item.evaluasi.keluhan_setelah_tindakan || '-')}</p>
                                 </div>
-                                <div>
-                                    <p class="text-xs font-bold text-on-surface-variant">Hasil Evaluasi:</p>
-                                    <p class="text-on-surface font-semibold text-on-surface mt-0.5">${item.evaluasi.hasil_evaluasi}</p>
-                                    <p class="text-xs text-on-surface-variant mt-1.5 font-medium"><span class="text-secondary font-bold">Rencana Lanjut:</span> ${item.evaluasi.rencana_selanjutnya}</p>
+                                <div class="flex items-start gap-2.5">
+                                    <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">O</span>
+                                    <p class="text-on-surface font-medium leading-relaxed">${escapeHtml(item.evaluasi.soap_o || item.evaluasi.respon_pasien || '-')}</p>
+                                </div>
+                                <div class="flex items-start gap-2.5">
+                                    <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">A</span>
+                                    <p class="text-on-surface font-medium leading-relaxed">${escapeHtml(item.evaluasi.soap_a || item.evaluasi.hasil_evaluasi || '-')}</p>
+                                </div>
+                                <div class="flex items-start gap-2.5">
+                                    <span class="w-6 h-6 rounded-md bg-primary text-white font-bold flex items-center justify-center shrink-0 text-xs mt-0.5">P</span>
+                                    <p class="text-on-surface font-medium leading-relaxed">${escapeHtml(item.evaluasi.soap_p || item.evaluasi.rencana_selanjutnya || '-')}</p>
                                 </div>
                             </div>
                         </div>

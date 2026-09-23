@@ -232,19 +232,62 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-on-surface mb-2">Keluhan Setelah Tindakan</label>
-                            <textarea id="evalKeluhanInput" name="keluhan_setelah_tindakan" rows="3" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Keluhan pasien setelah tindakan...">{{ $latestEvaluasi ? $latestEvaluasi->keluhan_setelah_tindakan : '' }}</textarea>
+                            <textarea id="evalKeluhanInput" name="keluhan_setelah_tindakan" rows="2" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Catatan keluhan pasien setelah tindakan...">{{ $latestEvaluasi ? $latestEvaluasi->keluhan_setelah_tindakan : '' }}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-on-surface mb-2">Respons Pasien</label>
-                            <textarea id="evalResponsInput" name="respon_pasien" rows="3" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Respons pasien terhadap tindakan...">{{ $latestEvaluasi ? $latestEvaluasi->respon_pasien : '' }}</textarea>
+                            <textarea id="evalResponsInput" name="respon_pasien" rows="2" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Respons psikologis / fisik pasien...">{{ $latestEvaluasi ? $latestEvaluasi->respon_pasien : '' }}</textarea>
                         </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-on-surface mb-2">Hasil Evaluasi</label>
-                            <textarea id="evalHasilInput" name="hasil_evaluasi" rows="3" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Hasil evaluasi keseluruhan...">{{ $latestEvaluasi ? $latestEvaluasi->hasil_evaluasi : '' }}</textarea>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-on-surface mb-2">Rencana Selanjutnya</label>
-                            <textarea id="evalRencanaInput" name="rencana_selanjutnya" rows="3" class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" placeholder="Rencana tindak lanjut...">{{ $latestEvaluasi ? $latestEvaluasi->rencana_selanjutnya : '' }}</textarea>
+
+                        {{-- BAGIAN EVALUASI SOAP (SIMPLE) --}}
+                        <div class="md:col-span-2 pt-1">
+                            <label class="block text-sm font-semibold text-on-surface mb-3">Hasil Evaluasi (SOAP)</label>
+
+                            <!-- Input cadangan / backward compatibility -->
+                            <input type="hidden" id="evalHasilInput" name="hasil_evaluasi" value="{{ $latestEvaluasi ? $latestEvaluasi->hasil_evaluasi : '' }}">
+                            <input type="hidden" id="evalRencanaInput" name="rencana_selanjutnya" value="{{ $latestEvaluasi ? $latestEvaluasi->rencana_selanjutnya : '' }}">
+
+                            <div class="space-y-3">
+                                {{-- Huruf S --}}
+                                <div class="flex items-start gap-3">
+                                    <span class="w-10 h-10 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        S
+                                    </span>
+                                    <textarea id="soap_s" name="soap_s" rows="2"
+                                        class="flex-1 bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                                        placeholder="S (Subjektif): keluhan atau pernyataan pasien...">{{ $latestEvaluasi ? ($latestEvaluasi->soap_s ?: $latestEvaluasi->keluhan_setelah_tindakan) : '' }}</textarea>
+                                </div>
+
+                                {{-- Huruf O --}}
+                                <div class="flex items-start gap-3">
+                                    <span class="w-10 h-10 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        O
+                                    </span>
+                                    <textarea id="soap_o" name="soap_o" rows="2"
+                                        class="flex-1 bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                                        placeholder="O (Objektif): hasil pemeriksaan fisik, tanda vital, observasi...">{{ $latestEvaluasi ? $latestEvaluasi->soap_o : '' }}</textarea>
+                                </div>
+
+                                {{-- Huruf A --}}
+                                <div class="flex items-start gap-3">
+                                    <span class="w-10 h-10 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        A
+                                    </span>
+                                    <textarea id="soap_a" name="soap_a" rows="2"
+                                        class="flex-1 bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                                        placeholder="A (Asesmen): analisis atau penilaian klinis pasien...">{{ $latestEvaluasi ? ($latestEvaluasi->soap_a ?: $latestEvaluasi->hasil_evaluasi) : '' }}</textarea>
+                                </div>
+
+                                {{-- Huruf P --}}
+                                <div class="flex items-start gap-3">
+                                    <span class="w-10 h-10 rounded-xl bg-primary text-white font-bold text-lg flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                                        P
+                                    </span>
+                                    <textarea id="soap_p" name="soap_p" rows="2"
+                                        class="flex-1 bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                                        placeholder="P (Plan): rencana tindak lanjut atau intervensi...">{{ $latestEvaluasi ? ($latestEvaluasi->soap_p ?: $latestEvaluasi->rencana_selanjutnya) : '' }}</textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -346,7 +389,7 @@
                                 </div>
                                 <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $kondisiBadge }} whitespace-nowrap">{{ $ev->status_kondisi }}</span>
                             </div>
-                            <p class="text-xs text-on-surface-variant truncate mb-1.5">{{ $ev->hasil_evaluasi ?: '-' }}</p>
+                            <p class="text-xs text-on-surface-variant truncate mb-1.5">{{ $ev->soap_s ? 'S: ' . $ev->soap_s : ($ev->hasil_evaluasi ?: '-') }}</p>
                             <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $statusBadge }}">{{ $ev->status_evaluasi }}</span>
                         </div>
                     @empty
@@ -496,19 +539,30 @@ function selectPasien(id) {
                 document.getElementById('evalKondisiSelect').value = ev.status_kondisi;
                 const radio = document.querySelector(`input[name="status_evaluasi"][value="${ev.status_evaluasi}"]`);
                 if (radio) radio.checked = true;
-                document.getElementById('evalKeluhanInput').value = ev.keluhan_setelah_tindakan || '';
-                document.getElementById('evalResponsInput').value = ev.respon_pasien || '';
-                document.getElementById('evalHasilInput').value   = ev.hasil_evaluasi || '';
-                document.getElementById('evalRencanaInput').value = ev.rencana_selanjutnya || '';
+                if (document.getElementById('evalKeluhanInput')) document.getElementById('evalKeluhanInput').value = ev.keluhan_setelah_tindakan || '';
+                if (document.getElementById('evalResponsInput')) document.getElementById('evalResponsInput').value = ev.respon_pasien || '';
+                if (document.getElementById('evalHasilInput')) document.getElementById('evalHasilInput').value   = ev.hasil_evaluasi || '';
+                if (document.getElementById('evalRencanaInput')) document.getElementById('evalRencanaInput').value = ev.rencana_selanjutnya || '';
+
+                // Isi form SOAP
+                document.getElementById('soap_s').value = ev.soap_s || ev.keluhan_setelah_tindakan || '';
+                document.getElementById('soap_o').value = ev.soap_o || '';
+                document.getElementById('soap_a').value = ev.soap_a || ev.hasil_evaluasi || '';
+                document.getElementById('soap_p').value = ev.soap_p || ev.rencana_selanjutnya || '';
             } else {
-                // Jangan reset form as-is karena akan membersihkan hidden fields, tapi reset manual fields evaluasi saja
+                // Reset manual fields evaluasi & SOAP
                 document.getElementById('evalKondisiSelect').value = 'Stabil';
                 const defaultRadio = document.querySelector('input[name="status_evaluasi"][value="Sedang Dievaluasi"]');
                 if (defaultRadio) defaultRadio.checked = true;
-                document.getElementById('evalKeluhanInput').value = '';
-                document.getElementById('evalResponsInput').value = '';
-                document.getElementById('evalHasilInput').value   = '';
-                document.getElementById('evalRencanaInput').value = '';
+                if (document.getElementById('evalKeluhanInput')) document.getElementById('evalKeluhanInput').value = '';
+                if (document.getElementById('evalResponsInput')) document.getElementById('evalResponsInput').value = '';
+                if (document.getElementById('evalHasilInput')) document.getElementById('evalHasilInput').value   = '';
+                if (document.getElementById('evalRencanaInput')) document.getElementById('evalRencanaInput').value = '';
+
+                document.getElementById('soap_s').value = '';
+                document.getElementById('soap_o').value = '';
+                document.getElementById('soap_a').value = '';
+                document.getElementById('soap_p').value = '';
             }
         })
         .catch(err => console.error(err));
@@ -520,6 +574,26 @@ function submitEvaluasi(e) {
     const idRM     = document.getElementById('hidden_id_rekam_medis').value;
     if (!idPasien) { showToast('Pilih Pasien Dulu', 'Pilih pasien dari daftar sebelum menyimpan.', 'error'); return; }
     if (!idRM)     { showToast('Rekam Medis Tidak Ada', 'Lakukan asuhan keperawatan terlebih dahulu untuk pasien ini.', 'warning'); return; }
+
+    const soapS = (document.getElementById('soap_s') ? document.getElementById('soap_s').value.trim() : '');
+    const soapO = (document.getElementById('soap_o') ? document.getElementById('soap_o').value.trim() : '');
+    const soapA = (document.getElementById('soap_a') ? document.getElementById('soap_a').value.trim() : '');
+    const soapP = (document.getElementById('soap_p') ? document.getElementById('soap_p').value.trim() : '');
+
+    // Sinkronisasi data ke input cadangan
+    const soapArr = [];
+    if (soapS) soapArr.push('S: ' + soapS);
+    if (soapO) soapArr.push('O: ' + soapO);
+    if (soapA) soapArr.push('A: ' + soapA);
+    if (soapP) soapArr.push('P: ' + soapP);
+    const combinedSoap = soapArr.join('\n');
+
+    if (document.getElementById('evalHasilInput')) {
+        document.getElementById('evalHasilInput').value = combinedSoap;
+    }
+    if (document.getElementById('evalRencanaInput')) {
+        document.getElementById('evalRencanaInput').value = soapP;
+    }
 
     const btn = document.getElementById('btnSimpanEvaluasi');
     btn.disabled = true;
@@ -534,7 +608,7 @@ function submitEvaluasi(e) {
     .then(data => {
         btn.disabled = false;
         btn.innerHTML = '<span class="material-symbols-outlined text-base">save</span> Simpan Evaluasi';
-        showToast(data.success ? 'Evaluasi Tersimpan!' : 'Gagal Menyimpan', data.message, data.success ? 'success' : 'error');
+        showToast(data.success ? 'Evaluasi SOAP Tersimpan!' : 'Gagal Menyimpan', data.message, data.success ? 'success' : 'error');
     })
     .catch(() => {
         btn.disabled = false;

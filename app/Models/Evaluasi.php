@@ -19,6 +19,10 @@ class Evaluasi extends Model
         'hasil_evaluasi',
         'rencana_selanjutnya',
         'catatan_soap',
+        'soap_s',
+        'soap_o',
+        'soap_a',
+        'soap_p',
     ];
 
     public function rekamMedis()
