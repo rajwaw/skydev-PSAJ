@@ -14,6 +14,11 @@ class Implementasi extends Model
         'id_rekam_medis',
         'tindakan_dilakukan',
         'resep_obat',
+        'rincian_implementasi',
+    ];
+
+    protected $casts = [
+        'rincian_implementasi' => 'array',
     ];
 
     public function rekamMedis()

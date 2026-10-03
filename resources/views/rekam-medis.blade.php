@@ -365,11 +365,11 @@
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                                                     <div>
                                                         <p class="text-xs font-bold text-on-surface-variant">Tindakan Keperawatan:</p>
-                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $implementasi->tindakan_dilakukan }}</p>
+                                                        <p class="text-on-surface font-semibold mt-0.5 whitespace-pre-line">{{ $implementasi->tindakan_dilakukan }}</p>
                                                     </div>
                                                     <div>
                                                         <p class="text-xs font-bold text-on-surface-variant">Resep / Pemberian Obat:</p>
-                                                        <p class="text-on-surface font-semibold mt-0.5">{{ $implementasi->resep_obat ?: '-' }}</p>
+                                                        <p class="text-on-surface font-semibold mt-0.5 whitespace-pre-line">{{ $implementasi->resep_obat ?: '-' }}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -701,11 +701,11 @@ function selectPasienRM(id) {
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                                 <div>
                                     <p class="text-xs font-bold text-on-surface-variant">Tindakan Keperawatan:</p>
-                                    <p class="text-on-surface font-semibold text-on-surface mt-0.5">${item.implementasi.tindakan_dilakukan}</p>
+                                    <p class="text-on-surface font-semibold text-on-surface mt-0.5 whitespace-pre-line">${item.implementasi.tindakan_dilakukan}</p>
                                 </div>
                                 <div>
                                     <p class="text-xs font-bold text-on-surface-variant">Resep / Pemberian Obat:</p>
-                                    <p class="text-on-surface font-semibold text-on-surface mt-0.5">${item.implementasi.resep_obat}</p>
+                                    <p class="text-on-surface font-semibold text-on-surface mt-0.5 whitespace-pre-line">${item.implementasi.resep_obat}</p>
                                 </div>
                             </div>
                         </div>

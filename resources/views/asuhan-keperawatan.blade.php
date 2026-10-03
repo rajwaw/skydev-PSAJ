@@ -757,36 +757,113 @@
                                 <span class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">6</span>
                                 Tindakan yang Dilakukan (Implementasi)
                             </h3>
-                            <p class="text-xs text-on-surface-variant mt-0.5">Catat tindakan keperawatan yang telah dilaksanakan serta resep / pemberian obat untuk pasien.</p>
+                            <p class="text-xs text-on-surface-variant mt-0.5">Catat tindakan keperawatan yang telah dilaksanakan serta obat yang diberikan untuk setiap tindakan.</p>
                         </div>
+
+                        <button
+                            type="button"
+                            onclick="tambahBarisImplementasi()"
+                            class="bg-[#E5F5F0] text-primary border border-primary/20 px-3.5 py-2 rounded-lg text-xs font-semibold hover:bg-primary/10 transition-colors flex items-center gap-1.5 shadow-sm">
+                            <span class="material-symbols-outlined text-[16px]">add</span>
+                            Tambah Tindakan
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <!-- Tindakan Keperawatan -->
-                        <div>
-                            <label for="inputTindakanDilakukan" class="block text-sm font-semibold text-on-surface mb-2">
-                                Tindakan Keperawatan
-                            </label>
-                            <textarea
-                                id="inputTindakanDilakukan"
-                                name="tindakan_dilakukan"
-                                placeholder="Masukkan detail tindakan keperawatan yang telah diberikan kepada pasien..."
-                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[110px] resize-none"
-                            >{{ $latestImplementasi ? $latestImplementasi->tindakan_dilakukan : '' }}</textarea>
-                        </div>
+                    <div class="overflow-x-auto rounded-xl border border-outline-variant/70">
+                        <table class="w-full text-left border-collapse text-sm min-w-[550px]" id="tabelImplementasi">
+                            <thead>
+                                <tr class="bg-[#F8FAFC] border-b border-outline-variant/70 text-xs font-bold text-on-surface-variant">
+                                    <th class="py-3 px-4 w-12 text-center">No.</th>
+                                    <th class="py-3 px-4">Tindakan Keperawatan</th>
+                                    <th class="py-3 px-4 w-48 sm:w-56">Obat / Terapi</th>
+                                    <th class="py-3 px-4 w-36 sm:w-40">Keterangan</th>
+                                    <th class="py-3 px-4 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="implementasiTbody" class="divide-y divide-outline-variant/50">
+                                @php
+                                    $parsedImplementasi = [];
+                                    if ($latestImplementasi) {
+                                        if (!empty($latestImplementasi->rincian_implementasi)) {
+                                            $parsedImplementasi = is_string($latestImplementasi->rincian_implementasi)
+                                                ? json_decode($latestImplementasi->rincian_implementasi, true)
+                                                : $latestImplementasi->rincian_implementasi;
+                                        }
+                                        if (empty($parsedImplementasi)) {
+                                            $tLines = !empty($latestImplementasi->tindakan_dilakukan)
+                                                ? array_values(array_filter(array_map('trim', explode("\n", $latestImplementasi->tindakan_dilakukan))))
+                                                : [];
+                                            $oLines = !empty($latestImplementasi->resep_obat)
+                                                ? array_values(array_filter(array_map('trim', explode("\n", $latestImplementasi->resep_obat))))
+                                                : [];
+                                            $maxCount = max(count($tLines), count($oLines));
+                                            for ($i = 0; $i < $maxCount; $i++) {
+                                                $t = $tLines[$i] ?? '';
+                                                $o = $oLines[$i] ?? '';
+                                                $t = preg_replace('/^\d+[\.\)]\s*/', '', $t);
+                                                $o = preg_replace('/^\d+[\.\)]\s*/', '', $o);
+                                                $ket = '';
+                                                if (preg_match('/^(.*?)\s*\((.*?)\)$/', $t, $m)) {
+                                                    $t = trim($m[1]);
+                                                    $ket = trim($m[2]);
+                                                }
+                                                if ($t !== '' || $o !== '' || $ket !== '') {
+                                                    $parsedImplementasi[] = [
+                                                        'tindakan' => $t,
+                                                        'obat' => $o,
+                                                        'keterangan' => $ket,
+                                                    ];
+                                                }
+                                            }
+                                        }
+                                    }
+                                @endphp
 
-                        <!-- Resep / Pemberian Obat -->
-                        <div>
-                            <label for="inputResepObat" class="block text-sm font-semibold text-on-surface mb-2">
-                                Resep / Pemberian Obat
-                            </label>
-                            <textarea
-                                id="inputResepObat"
-                                name="resep_obat"
-                                placeholder="Masukkan detail resep obat atau terapi obat jika ada..."
-                                class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[110px] resize-none"
-                            >{{ $latestImplementasi ? $latestImplementasi->resep_obat : '' }}</textarea>
-                        </div>
+                                @if(!empty($parsedImplementasi))
+                                    @foreach($parsedImplementasi as $index => $item)
+                                        <tr class="hover:bg-surface-container-low transition-colors implementasi-row">
+                                            <td class="py-3 px-4 text-center font-semibold text-on-surface-variant row-number">
+                                                {{ $index + 1 }}
+                                            </td>
+                                            <td class="py-2.5 px-4">
+                                                <input type="text" name="implementasi_tindakan[{{ $index }}][tindakan]" value="{{ $item['tindakan'] ?? '' }}" placeholder="Deskripsi tindakan keperawatan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            </td>
+                                            <td class="py-2.5 px-4">
+                                                <input type="text" name="implementasi_tindakan[{{ $index }}][obat]" value="{{ $item['obat'] ?? '' }}" placeholder="Nama obat / dosis (opsional)..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            </td>
+                                            <td class="py-2.5 px-4">
+                                                <input type="text" name="implementasi_tindakan[{{ $index }}][keterangan]" value="{{ $item['keterangan'] ?? '' }}" placeholder="Waktu / Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                            </td>
+                                            <td class="py-2.5 px-4 text-center">
+                                                <button type="button" onclick="hapusBarisImplementasi(this)" class="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Hapus Tindakan">
+                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr class="hover:bg-surface-container-low transition-colors implementasi-row">
+                                        <td class="py-3 px-4 text-center font-semibold text-on-surface-variant row-number">
+                                            1
+                                        </td>
+                                        <td class="py-2.5 px-4">
+                                            <input type="text" name="implementasi_tindakan[0][tindakan]" value="" placeholder="Deskripsi tindakan keperawatan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                        </td>
+                                        <td class="py-2.5 px-4">
+                                            <input type="text" name="implementasi_tindakan[0][obat]" value="" placeholder="Nama obat / dosis (opsional)..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                        </td>
+                                        <td class="py-2.5 px-4">
+                                            <input type="text" name="implementasi_tindakan[0][keterangan]" value="" placeholder="Waktu / Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+                                        </td>
+                                        <td class="py-2.5 px-4 text-center">
+                                            <button type="button" onclick="hapusBarisImplementasi(this)" class="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Hapus Tindakan">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </form>
@@ -829,6 +906,13 @@
                             <p class="text-xs text-on-surface-variant font-medium">Jumlah Rencana Asuhan</p>
                             <p id="summaryJumlahRencana" class="text-sm font-semibold text-on-surface mt-0.5">
                                 {{ $latestIntervensi->count() ?: 1 }} Tindakan
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-on-surface-variant font-medium">Jumlah Tindakan Dilakukan</p>
+                            <p id="summaryJumlahImplementasi" class="text-sm font-semibold text-on-surface mt-0.5">
+                                {{ (!empty($parsedImplementasi) ? count($parsedImplementasi) : 1) }} Tindakan
                             </p>
                         </div>
 
@@ -1132,15 +1216,7 @@ function selectPasienById(id) {
         }
 
         // 8. Prefill Tindakan yang Dilakukan (Implementasi)
-        const impl = data.implementasi;
-        const inputTindakan = document.getElementById('inputTindakanDilakukan');
-        const inputResep = document.getElementById('inputResepObat');
-        if (inputTindakan) {
-            inputTindakan.value = (impl && impl.tindakan_dilakukan) ? impl.tindakan_dilakukan : '';
-        }
-        if (inputResep) {
-            inputResep.value = (impl && impl.resep_obat) ? impl.resep_obat : '';
-        }
+        parseAndRenderImplementasi(data.implementasi);
 
         // 9. Update Timestamp Ringkasan Dokumen
         const summaryTimestamp = document.getElementById('summaryTimestamp');
@@ -1156,6 +1232,7 @@ function selectPasienById(id) {
         }
 
         updateRencanaCounter();
+        updateImplementasiCounter();
     })
     .catch(err => {
         if (btnSimpan) btnSimpan.disabled = false;
@@ -1475,6 +1552,131 @@ function updateRencanaCounter() {
     if (summary) summary.textContent = `${count} Tindakan`;
 }
 
+// =====================================
+// MANAJEMEN TINDAKAN IMPLEMENTASI (NO. 6)
+// =====================================
+function parseAndRenderImplementasi(impl) {
+    const tbody = document.getElementById('implementasiTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!impl) {
+        tambahBarisImplementasiWithData(0, '', '', '');
+        updateImplementasiCounter();
+        return;
+    }
+
+    let items = [];
+    if (impl.rincian_implementasi) {
+        if (typeof impl.rincian_implementasi === 'string') {
+            try {
+                items = JSON.parse(impl.rincian_implementasi);
+            } catch (e) {
+                items = [];
+            }
+        } else if (Array.isArray(impl.rincian_implementasi)) {
+            items = impl.rincian_implementasi;
+        }
+    }
+
+    // Fallback dari teks jika rincian_implementasi belum ada
+    if (!items || items.length === 0) {
+        const rawTindakan = impl.tindakan_dilakukan || '';
+        const rawObat = impl.resep_obat || '';
+
+        const tLines = rawTindakan ? rawTindakan.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0) : [];
+        const oLines = rawObat ? rawObat.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0) : [];
+
+        const maxCount = Math.max(tLines.length, oLines.length);
+        for (let i = 0; i < maxCount; i++) {
+            let t = tLines[i] ? tLines[i].replace(/^\[?\d+[\.\)\]]\s*/, '').trim() : '';
+            let o = oLines[i] ? oLines[i].replace(/^\[?\d+[\.\)\]]\s*/, '').trim() : '';
+            let ket = '';
+
+            const matchKet = t.match(/^(.*?)\s*\((.*?)\)$/);
+            if (matchKet) {
+                t = matchKet[1].trim();
+                ket = matchKet[2].trim();
+            }
+
+            if (t || o || ket) {
+                items.push({ tindakan: t, obat: o, keterangan: ket });
+            }
+        }
+    }
+
+    if (items.length > 0) {
+        items.forEach((item, idx) => {
+            tambahBarisImplementasiWithData(idx, item.tindakan || '', item.obat || '', item.keterangan || '');
+        });
+    } else {
+        tambahBarisImplementasiWithData(0, '', '', '');
+    }
+
+    updateImplementasiCounter();
+}
+
+function tambahBarisImplementasi() {
+    const tbody = document.getElementById('implementasiTbody');
+    const index = tbody.querySelectorAll('.implementasi-row').length;
+    tambahBarisImplementasiWithData(index, '', '', '');
+    updateImplementasiCounter();
+}
+
+function tambahBarisImplementasiWithData(index, tindakan = '', obat = '', keterangan = '') {
+    const tbody = document.getElementById('implementasiTbody');
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-surface-container-low transition-colors implementasi-row';
+    tr.innerHTML = `
+        <td class="py-3 px-4 text-center font-semibold text-on-surface-variant row-number">
+            ${index + 1}
+        </td>
+        <td class="py-2.5 px-4">
+            <input type="text" name="implementasi_tindakan[${index}][tindakan]" value="${escapeHtml(tindakan)}" placeholder="Deskripsi tindakan keperawatan..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+        </td>
+        <td class="py-2.5 px-4">
+            <input type="text" name="implementasi_tindakan[${index}][obat]" value="${escapeHtml(obat)}" placeholder="Nama obat / dosis (opsional)..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+        </td>
+        <td class="py-2.5 px-4">
+            <input type="text" name="implementasi_tindakan[${index}][keterangan]" value="${escapeHtml(keterangan)}" placeholder="Waktu / Rutin / Berkala..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs text-on-surface input-ring">
+        </td>
+        <td class="py-2.5 px-4 text-center">
+            <button type="button" onclick="hapusBarisImplementasi(this)" class="text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors" title="Hapus Tindakan">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+function hapusBarisImplementasi(btn) {
+    const tbody = document.getElementById('implementasiTbody');
+    const row = btn.closest('tr');
+    if (tbody.querySelectorAll('.implementasi-row').length <= 1) {
+        alert('Minimal harus ada 1 baris tindakan implementasi.');
+        return;
+    }
+    row.remove();
+    reindexImplementasiRows();
+    updateImplementasiCounter();
+}
+
+function reindexImplementasiRows() {
+    const rows = document.querySelectorAll('#implementasiTbody .implementasi-row');
+    rows.forEach((row, idx) => {
+        row.querySelector('.row-number').textContent = idx + 1;
+        row.querySelector('input[name*="[tindakan]"]').name = `implementasi_tindakan[${idx}][tindakan]`;
+        row.querySelector('input[name*="[obat]"]').name = `implementasi_tindakan[${idx}][obat]`;
+        row.querySelector('input[name*="[keterangan]"]').name = `implementasi_tindakan[${idx}][keterangan]`;
+    });
+}
+
+function updateImplementasiCounter() {
+    const count = document.querySelectorAll('#implementasiTbody .implementasi-row').length;
+    const summary = document.getElementById('summaryJumlahImplementasi');
+    if (summary) summary.textContent = `${count} Tindakan`;
+}
+
 function triggerSubmitForm() {
     const form = document.getElementById('formAsuhan');
     if (form) {
@@ -1698,6 +1900,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputTBEl) inputTBEl.addEventListener('input', updateIMTCalculation);
     if (inputBBEl) inputBBEl.addEventListener('input', updateIMTCalculation);
     updateIMTCalculation();
+
+    updateRencanaCounter();
+    updateImplementasiCounter();
 });
 
 document.addEventListener('keydown', (e) => {
@@ -1736,10 +1941,12 @@ function confirmResetFormAsuhan() {
     renderDiagnosisList();
     syncHiddenInputs();
     
-    const inputTindakan = document.getElementById('inputTindakanDilakukan');
-    const inputResep = document.getElementById('inputResepObat');
-    if (inputTindakan) inputTindakan.value = '';
-    if (inputResep) inputResep.value = '';
+    const implTbody = document.getElementById('implementasiTbody');
+    if (implTbody) {
+        implTbody.innerHTML = '';
+        tambahBarisImplementasiWithData(0, '', '', '');
+        updateImplementasiCounter();
+    }
 
     const tbody = document.getElementById('rencanaTbody');
     if (tbody) {

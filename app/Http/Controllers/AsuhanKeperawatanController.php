@@ -126,9 +126,10 @@ class AsuhanKeperawatanController extends Controller
             'asuhan' => $latestAsuhan,
             'intervensi' => $latestIntervensi,
             'implementasi' => $latestImplementasi ? [
-                'id_implementasi'    => $latestImplementasi->id_implementasi,
-                'tindakan_dilakukan' => $latestImplementasi->tindakan_dilakukan,
-                'resep_obat'         => $latestImplementasi->resep_obat,
+                'id_implementasi'      => $latestImplementasi->id_implementasi,
+                'tindakan_dilakukan'   => $latestImplementasi->tindakan_dilakukan,
+                'resep_obat'           => $latestImplementasi->resep_obat,
+                'rincian_implementasi' => $latestImplementasi->rincian_implementasi,
             ] : null,
             'terakhir_update' => ($latestAsuhan && $latestAsuhan->updated_at)
                 ? Carbon::parse($latestAsuhan->updated_at)->timezone('Asia/Jakarta')->translatedFormat('H:i')
@@ -162,6 +163,10 @@ class AsuhanKeperawatanController extends Controller
             'rencana_tindakan.*.tindakan' => 'nullable|string',
             'rencana_tindakan.*.target' => 'nullable|string',
             'rencana_tindakan.*.keterangan' => 'nullable|string',
+            'implementasi_tindakan' => 'nullable|array',
+            'implementasi_tindakan.*.tindakan' => 'nullable|string',
+            'implementasi_tindakan.*.obat' => 'nullable|string',
+            'implementasi_tindakan.*.keterangan' => 'nullable|string',
             'tindakan_dilakukan' => 'nullable|string',
             'resep_obat' => 'nullable|string',
         ]);
@@ -318,12 +323,54 @@ class AsuhanKeperawatanController extends Controller
             }
 
             // 5. Simpan / perbarui Implementasi (Tindakan yang Dilakukan & Resep Obat)
-            if ($request->filled('tindakan_dilakukan') || $request->filled('resep_obat') || Implementasi::where('id_rekam_medis', $rekamMedis->id_rekam_medis)->exists()) {
+            $implementasiList = $request->implementasi_tindakan;
+            $items = [];
+            $tindakanLines = [];
+            $obatLines = [];
+            $noTindakan = 1;
+            $noObat = 1;
+
+            if (!empty($implementasiList) && is_array($implementasiList)) {
+                foreach ($implementasiList as $item) {
+                    $tindakan = trim($item['tindakan'] ?? '');
+                    $obat = trim($item['obat'] ?? '');
+                    $keterangan = trim($item['keterangan'] ?? '');
+
+                    if ($tindakan !== '' || $obat !== '' || $keterangan !== '') {
+                        $items[] = [
+                            'tindakan'   => $tindakan,
+                            'obat'       => $obat,
+                            'keterangan' => $keterangan,
+                        ];
+
+                        if ($tindakan !== '') {
+                            $tText = "{$noTindakan}. {$tindakan}";
+                            if ($keterangan !== '') {
+                                $tText .= " ({$keterangan})";
+                            }
+                            $tindakanLines[] = $tText;
+                            $noTindakan++;
+                        }
+
+                        if ($obat !== '' && $obat !== '-') {
+                            $obatLines[] = "{$noObat}. {$obat}";
+                            $noObat++;
+                        }
+                    }
+                }
+            }
+
+            $tindakanDilakukan = !empty($tindakanLines) ? implode("\n", $tindakanLines) : ($request->tindakan_dilakukan ?: null);
+            $resepObat = !empty($obatLines) ? implode("\n", $obatLines) : ($request->resep_obat ?: null);
+            $rincianImplementasi = !empty($items) ? $items : null;
+
+            if ($tindakanDilakukan || $resepObat || !empty($items) || Implementasi::where('id_rekam_medis', $rekamMedis->id_rekam_medis)->exists()) {
                 Implementasi::updateOrCreate(
                     ['id_rekam_medis' => $rekamMedis->id_rekam_medis],
                     [
-                        'tindakan_dilakukan' => $request->tindakan_dilakukan,
-                        'resep_obat'         => $request->resep_obat,
+                        'tindakan_dilakukan'   => $tindakanDilakukan,
+                        'resep_obat'           => $resepObat,
+                        'rincian_implementasi' => $rincianImplementasi,
                     ]
                 );
             }
