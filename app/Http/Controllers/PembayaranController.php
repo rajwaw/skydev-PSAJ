@@ -118,7 +118,7 @@ class PembayaranController extends Controller
             'pendaftaran.rekamMedis.implementasi',
         ])
         ->orderByDesc('id_pembayaran')
-        ->limit(30)
+        ->limit(100)
         ->get();
 
         return view('pembayaran', compact(
