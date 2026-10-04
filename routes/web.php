@@ -11,6 +11,7 @@ use App\Http\Controllers\EvaluasiController;
 use App\Http\Controllers\ImplementasiController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\AiClinicalAssistantController;
+use App\Http\Controllers\ProfileController;
 
 
 /*
@@ -31,7 +32,11 @@ Route::get('/login', function () {
         return redirect()->route('dashboard');
     }
 
-    return view('login');
+    return response()
+        ->view('login')
+        ->header('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', 'Sun, 02 Jan 1990 00:00:00 GMT');
 
 })->name('login');
 
@@ -215,6 +220,19 @@ Route::post('/pembayaran', [PembayaranController::class, 'store'])
 Route::get('/pembayaran/pasien/{id}', [PembayaranController::class, 'getPasienDetail'])
     ->middleware('auth')
     ->name('pembayaran.pasien.detail');
+
+
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE & AKUN
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/account', [ProfileController::class, 'updateAccount'])->name('profile.account');
+});
 
 
 

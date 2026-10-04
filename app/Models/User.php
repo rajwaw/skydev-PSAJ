@@ -21,8 +21,21 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
     ];
+
+    /**
+     * Get the avatar URL or fallback to default profile image.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if (!empty($this->avatar) && file_exists(public_path($this->avatar))) {
+            return asset($this->avatar);
+        }
+
+        return asset('images/profil.png');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

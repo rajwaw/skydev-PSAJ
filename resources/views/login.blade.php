@@ -659,6 +659,13 @@ function togglePassword() {
 
 }
 
+// Auto reload page if restored from browser cache (Back button) to refresh CSRF token
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 </script>
 
 

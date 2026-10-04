@@ -289,28 +289,95 @@
         </nav>
 
         <!-- ACCOUNT + LOGOUT -->
-        <div class="pt-3 mt-2 border-t border-outline-variant">
-            <div class="flex items-center gap-3 px-2 mb-2">
-                <img
-                    src="{{ asset('images/profil.png') }}"
-                    alt="Foto Profil"
-                    class="w-9 h-9 rounded-full object-cover shrink-0 border border-outline-variant shadow-sm"
+        <div class="pt-3 mt-2 border-t border-outline-variant relative" id="accountMenuContainer">
+            <!-- PROFILE POPUP MENU -->
+            <div
+                id="profilePopup"
+                class="hidden absolute bottom-full left-0 right-0 mb-2.5 bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-50 transition-all duration-200"
+            >
+                <div class="p-2.5 bg-slate-50 rounded-xl mb-1.5 flex items-center gap-2.5 border border-slate-100">
+                    <img
+                        id="popupUserAvatar"
+                        src="{{ auth()->user()?->avatar_url ?? asset('images/profil.png') }}"
+                        alt="Foto Profil"
+                        class="w-9 h-9 rounded-full object-cover border border-outline-variant shrink-0 shadow-sm"
+                    >
+                    <div class="min-w-0 flex-1">
+                        <p id="popupUserName" class="text-xs font-bold text-on-surface truncate">
+                            {{ auth()->user()?->name ?? 'Yudha Tama' }}
+                        </p>
+                        <p id="popupUserEmail" class="text-[11px] text-on-surface-variant truncate">
+                            {{ auth()->user()?->email ?? 'admin@mandalacare.com' }}
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="openProfileModal('profile')"
+                    class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition-all text-xs font-semibold text-left group cursor-pointer"
                 >
+                    <span class="material-symbols-outlined text-xl text-emerald-600 group-hover:scale-110 transition-transform">
+                        manage_accounts
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold">Edit Profil</div>
+                        <div class="text-[10px] text-slate-400 font-normal">Ganti foto & username</div>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-600 text-sm">chevron_right</span>
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openProfileModal('account')"
+                    class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition-all text-xs font-semibold text-left group mt-0.5 cursor-pointer"
+                >
+                    <span class="material-symbols-outlined text-xl text-emerald-600 group-hover:scale-110 transition-transform">
+                        lock_reset
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold">Ganti Email & Password</div>
+                        <div class="text-[10px] text-slate-400 font-normal">Kredensial login akun</div>
+                    </div>
+                    <span class="material-symbols-outlined text-slate-400 group-hover:text-emerald-600 text-sm">chevron_right</span>
+                </button>
+            </div>
+
+            <!-- Profile Button Trigger -->
+            <button
+                type="button"
+                id="profileButtonTrigger"
+                onclick="toggleProfilePopup(event)"
+                class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-surface-container-low transition-all duration-200 text-left cursor-pointer group border border-transparent hover:border-outline-variant mb-2"
+                title="Klik untuk membuka menu profil & akun"
+            >
+                <div class="relative shrink-0">
+                    <img
+                        id="sidebarUserAvatar"
+                        src="{{ auth()->user()?->avatar_url ?? asset('images/profil.png') }}"
+                        alt="Foto Profil"
+                        class="w-10 h-10 rounded-full object-cover border border-outline-variant shadow-sm group-hover:scale-105 transition-transform"
+                    >
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
+                </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold truncate">
+                    <p id="sidebarUserName" class="text-sm font-semibold truncate group-hover:text-primary transition-colors">
                         {{ auth()->user()?->name ?? 'Yudha Tama' }}
                     </p>
                     <p class="text-xs text-on-surface-variant truncate">
                         Pemilik Klinik
                     </p>
                 </div>
-            </div>
+                <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-lg" id="profilePopupChevron">
+                    expand_less
+                </span>
+            </button>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button
                     type="submit"
-                    class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 transition-all text-sm font-semibold"
+                    class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 transition-all text-sm font-semibold cursor-pointer"
                 >
                     <span class="material-symbols-outlined text-xl">logout</span>
                     <span>Keluar</span>
@@ -345,16 +412,22 @@
             </div>
 
             <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                <div class="flex items-center gap-2 sm:gap-3 p-1 rounded-lg">
-                    <span class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate">
+                <button
+                    type="button"
+                    onclick="openProfileModal('profile')"
+                    class="flex items-center gap-2 sm:gap-3 p-1.5 rounded-xl hover:bg-surface-container transition-all cursor-pointer border border-transparent hover:border-outline-variant group"
+                    title="Pengaturan Profil & Akun"
+                >
+                    <span id="headerUserName" class="text-xs sm:text-sm font-semibold text-on-surface hidden lg:inline-block max-w-[120px] truncate group-hover:text-primary transition-colors">
                         {{ auth()->user()?->name ?? 'Yudha Tama' }}
                     </span>
                     <img
-                        src="{{ asset('images/profil.png') }}"
+                        id="headerUserAvatar"
+                        src="{{ auth()->user()?->avatar_url ?? asset('images/profil.png') }}"
                         alt="Foto Profil"
-                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-outline-variant shrink-0 shadow-sm"
+                        class="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-outline-variant shrink-0 shadow-sm group-hover:scale-105 transition-transform"
                     >
-                </div>
+                </button>
             </div>
         </header>
 
@@ -364,7 +437,300 @@
         </div>
     </main>
 
+    <!-- GLOBAL TOAST NOTIFICATION -->
+    <div
+        id="globalToast"
+        class="fixed top-5 right-5 z-[9999] hidden flex items-center gap-3 px-4 py-3 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 transition-all duration-300 transform -translate-y-4 opacity-0 max-w-sm"
+    >
+        <div id="toastIconContainer" class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <span id="toastIcon" class="material-symbols-outlined text-xl">check_circle</span>
+        </div>
+        <div class="flex-1 min-w-0 text-xs">
+            <p id="toastTitle" class="font-bold text-slate-900 truncate">Berhasil</p>
+            <p id="toastMessage" class="text-slate-600 mt-0.5 leading-snug line-clamp-2">Pembaruan berhasil disimpan.</p>
+        </div>
+        <button type="button" onclick="hideGlobalToast()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+            <span class="material-symbols-outlined text-base">close</span>
+        </button>
+    </div>
+
+    <!-- PROFILE & ACCOUNT MODAL -->
+    <div
+        id="profileModal"
+        class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profileModalTitle"
+    >
+        <!-- Modal Card -->
+        <div
+            id="profileModalCard"
+            class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-100 overflow-hidden transform transition-all duration-300 scale-95 opacity-0 flex flex-col max-h-[90vh]"
+        >
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shadow-sm">
+                        <span class="material-symbols-outlined text-2xl">manage_accounts</span>
+                    </div>
+                    <div>
+                        <h3 id="profileModalTitle" class="text-base font-bold text-slate-800 leading-tight">
+                            Pengaturan Akun
+                        </h3>
+                        <p class="text-xs text-slate-500">
+                            Kelola profil dan kredensial login Anda
+                        </p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onclick="closeProfileModal()"
+                    class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors"
+                    aria-label="Tutup"
+                >
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex border-b border-slate-200 bg-slate-50/30 px-6 pt-3 gap-2">
+                <button
+                    type="button"
+                    id="tabBtnProfile"
+                    onclick="switchProfileTab('profile')"
+                    class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 transition-all cursor-pointer"
+                >
+                    <span class="material-symbols-outlined text-lg">badge</span>
+                    <span>Edit Profil</span>
+                </button>
+                <button
+                    type="button"
+                    id="tabBtnAccount"
+                    onclick="switchProfileTab('account')"
+                    class="flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
+                >
+                    <span class="material-symbols-outlined text-lg">lock_reset</span>
+                    <span>Ganti Email & Password</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto flex-1">
+                <!-- TAB 1: EDIT PROFIL -->
+                <div id="tabContentProfile" class="space-y-4">
+                    <form id="formUpdateProfile" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" onsubmit="handleProfileSubmit(event)">
+                        @csrf
+                        <!-- Alert Box inside modal -->
+                        <div id="profileAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium border"></div>
+
+                        <!-- Foto Profil Section -->
+                        <div class="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+                            <div class="relative group cursor-pointer" onclick="document.getElementById('avatarFileInput').click()" title="Klik untuk mengganti foto profil">
+                                <img
+                                    id="avatarModalPreview"
+                                    src="{{ auth()->user()?->avatar_url ?? asset('images/profil.png') }}"
+                                    alt="Foto Profil"
+                                    class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md ring-2 ring-emerald-500/30 group-hover:opacity-90 transition-all"
+                                >
+                                <div class="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
+                                    <span class="material-symbols-outlined text-2xl">photo_camera</span>
+                                </div>
+                                <div
+                                    class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md hover:bg-emerald-700 ring-2 ring-white transition-transform active:scale-95"
+                                >
+                                    <span class="material-symbols-outlined text-base">camera_alt</span>
+                                </div>
+                            </div>
+
+                            <input
+                                type="file"
+                                id="avatarFileInput"
+                                name="avatar"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                class="hidden"
+                                onchange="onAvatarFileSelected(this)"
+                            >
+
+                            <div class="mt-3 text-center">
+                                <button
+                                    type="button"
+                                    onclick="document.getElementById('avatarFileInput').click()"
+                                    class="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <span class="material-symbols-outlined text-sm">upload</span>
+                                    <span>Pilih Foto Baru</span>
+                                </button>
+                                <p class="text-[11px] text-slate-400 mt-1">
+                                    Format: JPG, PNG, WEBP. Maksimal 2MB.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Username / Nama Input -->
+                        <div class="space-y-1.5 mb-5">
+                            <label for="inputProfileName" class="block text-xs font-bold text-slate-700">
+                                Username / Nama Lengkap <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                                    person
+                                </span>
+                                <input
+                                    type="text"
+                                    id="inputProfileName"
+                                    name="name"
+                                    value="{{ auth()->user()?->name ?? '' }}"
+                                    required
+                                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                                    placeholder="Masukkan nama atau username"
+                                >
+                            </div>
+                            <p class="text-[11px] text-slate-400">
+                                Nama ini tampil di sidebar, navbar atas, serta riwayat tindakan medis.
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                            <button
+                                type="button"
+                                onclick="closeProfileModal()"
+                                class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                id="btnSaveProfile"
+                                class="px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                            >
+                                <span class="material-symbols-outlined text-base">check</span>
+                                <span>Simpan Profil</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB 2: GANTI EMAIL & PASSWORD -->
+                <div id="tabContentAccount" class="hidden space-y-4">
+                    <form id="formUpdateAccount" action="{{ route('profile.account') }}" method="POST" onsubmit="handleAccountSubmit(event)">
+                        @csrf
+                        <!-- Alert Box inside modal -->
+                        <div id="accountAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium border"></div>
+
+                        <!-- Important Information Banner -->
+                        <div class="p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl flex items-start gap-3 text-xs text-blue-900">
+                            <span class="material-symbols-outlined text-blue-600 text-xl shrink-0 mt-0.5">info</span>
+                            <div class="leading-relaxed">
+                                <p class="font-bold">Akses Login Mandalacare</p>
+                                <p class="text-blue-700 text-[11px] mt-0.5">
+                                    Email dan password yang Anda simpan di sini akan digunakan saat Anda masuk (login) ke aplikasi Mandalacare.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Email Input -->
+                        <div class="space-y-1.5">
+                            <label for="inputAccountEmail" class="block text-xs font-bold text-slate-700">
+                                Alamat Email (Login) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                                    mail
+                                </span>
+                                <input
+                                    type="email"
+                                    id="inputAccountEmail"
+                                    name="email"
+                                    value="{{ auth()->user()?->email ?? '' }}"
+                                    required
+                                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                                    placeholder="nama@email.com"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Password Baru -->
+                        <div class="space-y-1.5">
+                            <label for="inputAccountPassword" class="block text-xs font-bold text-slate-700">
+                                Password Baru
+                            </label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                                    key
+                                </span>
+                                <input
+                                    type="password"
+                                    id="inputAccountPassword"
+                                    name="password"
+                                    class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                                    placeholder="Kosongkan jika tidak ingin ganti password"
+                                >
+                                <button
+                                    type="button"
+                                    onclick="togglePasswordVisibility('inputAccountPassword', 'eyeIcon1')"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                                    tabindex="-1"
+                                >
+                                    <span id="eyeIcon1" class="material-symbols-outlined text-lg">visibility</span>
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-slate-400">Minimal 6 karakter (kombinasi huruf & angka disarankan).</p>
+                        </div>
+
+                        <!-- Konfirmasi Password Baru -->
+                        <div class="space-y-1.5">
+                            <label for="inputAccountPasswordConfirmation" class="block text-xs font-bold text-slate-700">
+                                Konfirmasi Password Baru
+                            </label>
+                            <div class="relative">
+                                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                                    lock_clock
+                                </span>
+                                <input
+                                    type="password"
+                                    id="inputAccountPasswordConfirmation"
+                                    name="password_confirmation"
+                                    class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                                    placeholder="Ketik ulang password baru"
+                                >
+                                <button
+                                    type="button"
+                                    onclick="togglePasswordVisibility('inputAccountPasswordConfirmation', 'eyeIcon2')"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                                    tabindex="-1"
+                                >
+                                    <span id="eyeIcon2" class="material-symbols-outlined text-lg">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                            <button
+                                type="button"
+                                onclick="closeProfileModal()"
+                                class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                id="btnSaveAccount"
+                                class="px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
+                            >
+                                <span class="material-symbols-outlined text-base">save</span>
+                                <span>Simpan Email & Password</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Toggle mobile sidebar
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -372,14 +738,12 @@
 
             const isClosed = sidebar.classList.contains('-translate-x-full');
             if (isClosed) {
-                // Open Drawer
                 overlay.classList.remove('hidden');
                 setTimeout(() => overlay.classList.remove('opacity-0'), 10);
                 sidebar.classList.remove('-translate-x-full');
                 sidebar.classList.add('translate-x-0');
                 document.body.style.overflow = 'hidden';
             } else {
-                // Close Drawer
                 overlay.classList.add('opacity-0');
                 sidebar.classList.remove('translate-x-0');
                 sidebar.classList.add('-translate-x-full');
@@ -387,6 +751,358 @@
                 document.body.style.overflow = '';
             }
         }
+
+        // Toggle Profile Popup Menu above sidebar profile button
+        function toggleProfilePopup(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            const popup = document.getElementById('profilePopup');
+            const chevron = document.getElementById('profilePopupChevron');
+            if (!popup) return;
+
+            const isHidden = popup.classList.contains('hidden');
+            if (isHidden) {
+                popup.classList.remove('hidden');
+                if (chevron) chevron.textContent = 'expand_more';
+            } else {
+                popup.classList.add('hidden');
+                if (chevron) chevron.textContent = 'expand_less';
+            }
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('accountMenuContainer');
+            const popup = document.getElementById('profilePopup');
+            if (popup && !popup.classList.contains('hidden')) {
+                if (container && !container.contains(event.target)) {
+                    popup.classList.add('hidden');
+                    const chevron = document.getElementById('profilePopupChevron');
+                    if (chevron) chevron.textContent = 'expand_less';
+                }
+            }
+        });
+
+        // Open Profile Settings Modal with specific tab
+        function openProfileModal(tab = 'profile') {
+            // Close popup
+            const popup = document.getElementById('profilePopup');
+            if (popup) {
+                popup.classList.add('hidden');
+                const chevron = document.getElementById('profilePopupChevron');
+                if (chevron) chevron.textContent = 'expand_less';
+            }
+
+            // Close mobile sidebar if open
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
+
+            // Reset alerts
+            hideAlert('profileAlert');
+            hideAlert('accountAlert');
+
+            switchProfileTab(tab);
+
+            const modal = document.getElementById('profileModal');
+            const card = document.getElementById('profileModalCard');
+            if (!modal || !card) return;
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // Close Profile Settings Modal
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            const card = document.getElementById('profileModalCard');
+            if (!modal || !card) return;
+
+            card.classList.remove('scale-100', 'opacity-100');
+            card.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 250);
+        }
+
+        // Close modal on backdrop click or ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProfileModal();
+                const popup = document.getElementById('profilePopup');
+                if (popup) popup.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('profileModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProfileModal();
+            }
+        });
+
+        // Switch between 'profile' and 'account' tabs
+        function switchProfileTab(tab) {
+            const tabBtnProfile = document.getElementById('tabBtnProfile');
+            const tabBtnAccount = document.getElementById('tabBtnAccount');
+            const tabContentProfile = document.getElementById('tabContentProfile');
+            const tabContentAccount = document.getElementById('tabContentAccount');
+
+            if (!tabBtnProfile || !tabBtnAccount || !tabContentProfile || !tabContentAccount) return;
+
+            if (tab === 'profile') {
+                // Active profile tab
+                tabBtnProfile.className = 'flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 transition-all cursor-pointer';
+                tabBtnAccount.className = 'flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all cursor-pointer';
+                tabContentProfile.classList.remove('hidden');
+                tabContentAccount.classList.add('hidden');
+            } else {
+                // Active account tab
+                tabBtnAccount.className = 'flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-emerald-600 text-emerald-700 transition-all cursor-pointer';
+                tabBtnProfile.className = 'flex items-center gap-2 pb-3 px-3 text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-all cursor-pointer';
+                tabContentAccount.classList.remove('hidden');
+                tabContentProfile.classList.add('hidden');
+            }
+        }
+
+        // Avatar file preview
+        function onAvatarFileSelected(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            // Validate file size (2MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                showAlert('profileAlert', 'Ukuran foto maksimal adalah 2 MB. Silakan pilih foto lain.', true);
+                input.value = '';
+                return;
+            }
+
+            hideAlert('profileAlert');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('avatarModalPreview');
+                if (preview) preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Global Toast Notification
+        window.globalToastTimeout = null;
+        function showGlobalToast(title, message, isError = false) {
+            const toast = document.getElementById('globalToast');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastContainer = document.getElementById('toastIconContainer');
+            if (!toast) return;
+
+            toastTitle.textContent = title;
+            toastMsg.textContent = message;
+
+            if (isError) {
+                toastIcon.textContent = 'error';
+                toastContainer.className = 'w-8 h-8 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shrink-0';
+            } else {
+                toastIcon.textContent = 'check_circle';
+                toastContainer.className = 'w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0';
+            }
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.remove('-translate-y-4', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+
+            clearTimeout(window.globalToastTimeout);
+            window.globalToastTimeout = setTimeout(hideGlobalToast, 4500);
+        }
+
+        function hideGlobalToast() {
+            const toast = document.getElementById('globalToast');
+            if (!toast) return;
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('-translate-y-4', 'opacity-0');
+            setTimeout(() => toast.classList.add('hidden'), 300);
+        }
+
+        // Alert helper inside modal
+        function showAlert(containerId, message, isError = true) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            box.className = isError
+                ? 'mb-4 p-3 rounded-xl text-xs font-medium border bg-red-50 text-red-700 border-red-200'
+                : 'mb-4 p-3 rounded-xl text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200';
+            box.innerHTML = message;
+            box.classList.remove('hidden');
+        }
+
+        function hideAlert(containerId) {
+            const box = document.getElementById(containerId);
+            if (box) {
+                box.classList.add('hidden');
+                box.innerHTML = '';
+            }
+        }
+
+        // Handle Profile Form Submit via Fetch (AJAX)
+        async function handleProfileSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('btnSaveProfile');
+            const originalBtnHtml = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span><span>Menyimpan...</span>`;
+            hideAlert('profileAlert');
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Update user name in all places
+                    const sidebarName = document.getElementById('sidebarUserName');
+                    const headerName = document.getElementById('headerUserName');
+                    const popupName = document.getElementById('popupUserName');
+                    if (sidebarName) sidebarName.textContent = data.name;
+                    if (headerName) headerName.textContent = data.name;
+                    if (popupName) popupName.textContent = data.name;
+
+                    // Update avatar in all places
+                    if (data.avatar_url) {
+                        const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+                        const headerAvatar = document.getElementById('headerUserAvatar');
+                        const popupAvatar = document.getElementById('popupUserAvatar');
+                        const modalAvatar = document.getElementById('avatarModalPreview');
+                        if (sidebarAvatar) sidebarAvatar.src = data.avatar_url;
+                        if (headerAvatar) headerAvatar.src = data.avatar_url;
+                        if (popupAvatar) popupAvatar.src = data.avatar_url;
+                        if (modalAvatar) modalAvatar.src = data.avatar_url;
+                    }
+
+                    closeProfileModal();
+                    showGlobalToast('Berhasil!', data.message || 'Profil berhasil diperbarui!');
+                } else {
+                    let errMsg = data.message || 'Gagal menyimpan profil.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('<br>');
+                    }
+                    showAlert('profileAlert', errMsg, true);
+                }
+            } catch (err) {
+                console.error(err);
+                // Fallback to normal form submit if fetch fails
+                form.submit();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        // Handle Account (Email & Password) Form Submit via Fetch (AJAX)
+        async function handleAccountSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = document.getElementById('btnSaveAccount');
+            const originalBtnHtml = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">progress_activity</span><span>Menyimpan...</span>`;
+            hideAlert('accountAlert');
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Update email on popup header
+                    const popupEmail = document.getElementById('popupUserEmail');
+                    if (popupEmail && data.email) {
+                        popupEmail.textContent = data.email;
+                    }
+
+                    // Clear password fields
+                    document.getElementById('inputAccountPassword').value = '';
+                    document.getElementById('inputAccountPasswordConfirmation').value = '';
+
+                    closeProfileModal();
+                    showGlobalToast('Berhasil!', data.message || 'Email & password login berhasil diperbarui!');
+                } else {
+                    let errMsg = data.message || 'Gagal menyimpan email dan password.';
+                    if (data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('<br>');
+                    }
+                    showAlert('accountAlert', errMsg, true);
+                }
+            } catch (err) {
+                console.error(err);
+                // Fallback to normal form submit
+                form.submit();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+
+        // Auto display session notifications or open modal on server-side validation error
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('profile_success'))
+                showGlobalToast('Berhasil!', '{{ session("profile_success") }}');
+            @endif
+            @if(session('account_success'))
+                showGlobalToast('Berhasil!', '{{ session("account_success") }}');
+            @endif
+            @if($errors->has('name') || $errors->has('avatar'))
+                openProfileModal('profile');
+                showAlert('profileAlert', '{!! addslashes(implode("<br>", $errors->all())) !!}', true);
+            @elseif($errors->has('email') || $errors->has('password'))
+                openProfileModal('account');
+                showAlert('accountAlert', '{!! addslashes(implode("<br>", $errors->all())) !!}', true);
+            @endif
+        });
     </script>
 </body>
 </html>
