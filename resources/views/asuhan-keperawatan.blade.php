@@ -594,7 +594,7 @@
                         <div class="flex items-center justify-between mb-3">
                             <label class="block text-xs font-bold uppercase tracking-wider text-on-surface flex items-center gap-1.5">
                                 <span class="material-symbols-outlined text-primary text-[18px]">format_list_numbered</span>
-                                Daftar Diagnosis Keperawatan Tercatat
+                                <span>Daftar Diagnosis Keperawatan Tercatat</span>
                             </label>
                             <span id="badgeJumlahDiagnosis" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                                 0 Diagnosis
@@ -621,7 +621,7 @@
                         <textarea
                             id="inputPrioritasDiagnosa"
                             name="prioritas_diagnosa"
-                            placeholder="Tentukan prioritas penanganan dan arahan khusus..."
+                            placeholder="Tentukan prioritas penanganan dan arahan khusus (pilih dari tombol 'Pilih Prioritas' di atas)..."
                             class="w-full bg-surface border border-outline-variant rounded-xl p-3 text-sm text-on-surface input-ring min-h-[80px] resize-none"
                         >{{ ($latestIntervensi && $latestIntervensi->isNotEmpty()) ? ($latestIntervensi->pluck('prioritas_diagnosa')->filter()->first() ?? '') : '' }}</textarea>
                     </div>
@@ -1202,6 +1202,7 @@ function selectPasienById(id) {
             : '';
         document.getElementById('inputPrioritasDiagnosa').value = savedPrioritas;
         syncPrioritasReminder();
+        updatePrioritySelectionUI();
 
         // 7. Render Intervensi Table Rows
         const tbody = document.getElementById('rencanaTbody');
@@ -1288,6 +1289,118 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
+function formatDiagnosisString(item) {
+    if (!item) return '';
+    const masalah = (item.masalah || '').trim();
+    let faktor = (item.faktor_terkait || '').trim();
+    if (faktor !== '') {
+        if (/^(?:berhubungan\s+dengan|b\.?d\.?|b\/d)\s+/i.test(faktor)) {
+            faktor = faktor.replace(/^(?:berhubungan\s+dengan|b\.?d\.?|b\/d)\s+/i, '').trim();
+        }
+        return `${masalah} Berhubungan dengan ${faktor}`;
+    }
+    return masalah;
+}
+
+function getSelectedPriorityIndex() {
+    const elInput = document.getElementById('inputPrioritasDiagnosa');
+    if (!elInput) return -1;
+    const currentVal = elInput.value.trim().toLowerCase();
+    if (!currentVal) return -1;
+
+    for (let i = 0; i < diagnosisList.length; i++) {
+        const item = diagnosisList[i];
+        const fullStr = formatDiagnosisString(item).toLowerCase();
+        if (fullStr && (currentVal === fullStr || currentVal.startsWith(fullStr))) {
+            return i;
+        }
+    }
+
+    for (let i = 0; i < diagnosisList.length; i++) {
+        const item = diagnosisList[i];
+        const fullStr = formatDiagnosisString(item).toLowerCase();
+        if (fullStr && currentVal.includes(fullStr)) {
+            return i;
+        }
+    }
+
+    for (let i = 0; i < diagnosisList.length; i++) {
+        const masalahOnly = (diagnosisList[i].masalah || '').trim().toLowerCase();
+        if (masalahOnly && currentVal.includes(masalahOnly)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+function updatePrioritySelectionUI() {
+    const container = document.getElementById('containerDaftarDiagnosis');
+    if (!container) return;
+    const cards = container.querySelectorAll('.diagnosis-card');
+    const activeIdx = getSelectedPriorityIndex();
+
+    cards.forEach((card, idx) => {
+        const isSelected = (idx === activeIdx);
+        if (isSelected) {
+            card.classList.add('border-primary/80', 'bg-primary/[0.04]', 'ring-1', 'ring-primary/25', 'shadow-sm');
+            card.classList.remove('border-outline-variant/70', 'bg-white');
+        } else {
+            card.classList.remove('border-primary/80', 'bg-primary/[0.04]', 'ring-1', 'ring-primary/25', 'shadow-sm');
+            card.classList.add('border-outline-variant/70', 'bg-white');
+        }
+
+        const badge = card.querySelector('.prioritas-active-badge');
+        if (badge) {
+            if (isSelected) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+        }
+
+        const numBadge = card.querySelector('.priority-num-badge');
+        if (numBadge) {
+            if (isSelected) {
+                numBadge.className = 'priority-num-badge w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs transition-colors';
+            } else {
+                numBadge.className = 'priority-num-badge w-6 h-6 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs transition-colors';
+            }
+        }
+
+        const btnPilih = card.querySelector('.btn-pilih-prioritas');
+        if (btnPilih) {
+            if (isSelected) {
+                btnPilih.className = 'btn-pilih-prioritas bg-primary text-white border border-primary shadow-xs px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95';
+                btnPilih.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span><span>Terpilih</span>';
+                btnPilih.title = 'Diagnosis ini sedang dijadikan prioritas (Klik untuk batalkan)';
+            } else {
+                btnPilih.className = 'btn-pilih-prioritas bg-surface hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 border border-emerald-300/80 hover:border-emerald-400 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95 shadow-xs';
+                btnPilih.innerHTML = '<span class="material-symbols-outlined text-[16px]">flag</span><span>Pilih Prioritas</span>';
+                btnPilih.title = 'Pilih diagnosis ini ke prioritas diagnosa';
+            }
+        }
+    });
+}
+
+function pilihDiagnosisKePrioritas(idx) {
+    if (idx < 0 || idx >= diagnosisList.length) return;
+    const item = diagnosisList[idx];
+    const text = formatDiagnosisString(item);
+    const input = document.getElementById('inputPrioritasDiagnosa');
+    if (input) {
+        // Jika sudah terpilih dan diklik kembali, batalkan pilihan (toggle)
+        if (getSelectedPriorityIndex() === idx) {
+            input.value = '';
+        } else {
+            input.value = text;
+            input.classList.add('ring-2', 'ring-primary', 'border-primary');
+            setTimeout(() => {
+                input.classList.remove('ring-2', 'ring-primary');
+            }, 1200);
+        }
+        syncPrioritasReminder();
+    }
+    updatePrioritySelectionUI();
+}
+
 function catatDiagnosis() {
     const inputMasalah = document.getElementById('inputDiagnosaAwal');
     const inputFaktor = document.getElementById('inputFaktorTerkait');
@@ -1317,7 +1430,16 @@ function catatDiagnosis() {
 
 function hapusDiagnosis(index) {
     if (index >= 0 && index < diagnosisList.length) {
+        const deletedItem = diagnosisList[index];
+        const deletedStr = formatDiagnosisString(deletedItem).toLowerCase();
         diagnosisList.splice(index, 1);
+
+        const inputPrioritas = document.getElementById('inputPrioritasDiagnosa');
+        if (inputPrioritas && inputPrioritas.value.trim().toLowerCase() === deletedStr) {
+            inputPrioritas.value = '';
+            syncPrioritasReminder();
+        }
+
         renderDiagnosisList();
         syncHiddenInputs();
     }
@@ -1359,30 +1481,54 @@ function renderDiagnosisList() {
 
     if (emptyState) emptyState.classList.add('hidden');
 
+    const activePriorityIdx = getSelectedPriorityIndex();
+
     let html = '';
     diagnosisList.forEach((item, idx) => {
         const no = idx + 1;
+        const isSelected = (idx === activePriorityIdx);
+        const cardBorderClass = isSelected
+            ? 'border-primary/80 bg-primary/[0.04] ring-1 ring-primary/25 shadow-sm'
+            : 'border-outline-variant/70 hover:border-primary/40 bg-white hover:bg-surface-container-low';
+
         html += `
-            <div class="diagnosis-card bg-white hover:bg-surface-container-low border border-outline-variant/70 rounded-xl p-3 sm:p-3.5 flex items-start justify-between gap-3 transition-all shadow-xs group">
-                <div class="flex items-start gap-3 flex-1 min-w-0">
-                    <span class="w-6 h-6 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+            <div class="diagnosis-card ${cardBorderClass} rounded-xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-3 transition-all shadow-xs group">
+                <div class="flex items-start gap-3 flex-1 min-w-0 cursor-pointer" onclick="pilihDiagnosisKePrioritas(${idx})" title="Klik untuk jadikan Prioritas Diagnosa">
+                    <span class="priority-num-badge w-6 h-6 rounded-full ${isSelected ? 'bg-primary text-white' : 'bg-primary/10 text-primary border border-primary/20'} text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-xs transition-colors">
                         ${no}
                     </span>
                     <div class="text-xs sm:text-sm text-on-surface leading-relaxed break-words flex-1">
-                        <span class="font-bold text-on-surface">${escapeHtml(item.masalah)}</span>
-                        ${item.faktor_terkait && item.faktor_terkait.trim() !== '' ? `
-                            <span class="inline-block mx-1.5 px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">
-                                Berhubungan dengan
+                        <div class="flex items-center gap-2 flex-wrap mb-0.5">
+                            <span class="font-bold text-on-surface">${escapeHtml(item.masalah)}</span>
+                            <span class="prioritas-active-badge inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider bg-primary text-white px-2 py-0.5 rounded-full shadow-xs ${isSelected ? '' : 'hidden'}">
+                                <span class="material-symbols-outlined text-[12px]">verified</span>
+                                Prioritas Terpilih
                             </span>
-                            <span class="text-on-surface-variant font-medium">${escapeHtml(item.faktor_terkait)}</span>
+                        </div>
+                        ${item.faktor_terkait && item.faktor_terkait.trim() !== '' ? `
+                            <div class="mt-1 flex items-center gap-1.5 flex-wrap">
+                                <span class="inline-block px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-xs border border-primary/20">
+                                    Berhubungan dengan
+                                </span>
+                                <span class="text-on-surface-variant font-medium">${escapeHtml(item.faktor_terkait)}</span>
+                            </div>
                         ` : ''}
                     </div>
                 </div>
-                <div class="flex items-center gap-1 shrink-0 ml-2">
-                    <button type="button" onclick="editDiagnosis(${idx})" class="text-on-surface-variant hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors cursor-pointer" title="Edit Diagnosis">
+
+                <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center ml-2">
+                    <button type="button"
+                        onclick="event.stopPropagation(); pilihDiagnosisKePrioritas(${idx})"
+                        class="btn-pilih-prioritas ${isSelected ? 'bg-primary text-white border border-primary shadow-xs' : 'bg-surface hover:bg-emerald-50 text-emerald-700 hover:text-emerald-800 border border-emerald-300/80 hover:border-emerald-400'} px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer active:scale-95 shadow-xs"
+                        title="${isSelected ? 'Diagnosis ini sedang dijadikan prioritas (Klik untuk batalkan)' : 'Pilih diagnosis ini ke prioritas diagnosa'}">
+                        <span class="material-symbols-outlined text-[16px]">${isSelected ? 'check_circle' : 'flag'}</span>
+                        <span>${isSelected ? 'Terpilih' : 'Pilih Prioritas'}</span>
+                    </button>
+                    <div class="h-5 w-px bg-outline-variant/60 mx-0.5"></div>
+                    <button type="button" onclick="event.stopPropagation(); editDiagnosis(${idx})" class="text-on-surface-variant hover:text-primary hover:bg-primary/10 p-1.5 rounded-lg transition-colors cursor-pointer" title="Edit Diagnosis">
                         <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
-                    <button type="button" onclick="hapusDiagnosis(${idx})" class="text-on-surface-variant hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer" title="Hapus Diagnosis">
+                    <button type="button" onclick="event.stopPropagation(); hapusDiagnosis(${idx})" class="text-on-surface-variant hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer" title="Hapus Diagnosis">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                     </button>
                 </div>
@@ -1887,12 +2033,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event listener real-time sync Prioritas Diagnosa ke Pengingat di Nomor 5
+    // Event listener real-time sync Prioritas Diagnosa ke Pengingat di Nomor 5 & Selector
     const inputPrioritasEl = document.getElementById('inputPrioritasDiagnosa');
     if (inputPrioritasEl) {
-        inputPrioritasEl.addEventListener('input', syncPrioritasReminder);
+        inputPrioritasEl.addEventListener('input', () => {
+            syncPrioritasReminder();
+            updatePrioritySelectionUI();
+        });
     }
     syncPrioritasReminder();
+    updatePrioritySelectionUI();
 
     // Event listener real-time kalkulasi IMT saat TB atau BB diubah
     const inputTBEl = document.getElementById('inputTB');
