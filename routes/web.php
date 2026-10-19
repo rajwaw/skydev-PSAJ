@@ -130,6 +130,14 @@ Route::get('/rekam-medis/pasien/{id}', [RekamMedisController::class, 'getPasienR
     ->middleware('auth')
     ->name('rekam-medis.pasien.detail');
 
+Route::get('/rekam-medis/pasien/{id}/pdf', [RekamMedisController::class, 'downloadPdf'])
+    ->middleware('auth')
+    ->name('rekam-medis.pasien.pdf');
+
+Route::get('/rekam-medis/kunjungan/{id_rekam_medis}/pdf', [RekamMedisController::class, 'downloadKunjunganPdf'])
+    ->middleware('auth')
+    ->name('rekam-medis.kunjungan.pdf');
+
 
 
 /*

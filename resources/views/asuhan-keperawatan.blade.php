@@ -961,7 +961,7 @@
                         onclick="openResetModal()"
                         class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 group">
                         <span class="material-symbols-outlined text-[17px] text-red-500 group-hover:text-white transition-colors">restart_alt</span>
-                        <span>Bersihkan Form</span>
+                        <span>Kunjungan Baru</span>
                     </button>
                 </div>
 

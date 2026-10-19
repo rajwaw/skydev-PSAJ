@@ -13,12 +13,12 @@
                 Kelola dan pantau riwayat pemeriksaan serta keluhan setiap pasien secara rinci dari database.
             </p>
         </div>
-        @if($selectedPasien)
-            <a href="{{ route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) }}" id="topBtnAsuhan" class="bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#005a3c] transition-colors inline-flex items-center gap-2 shadow-sm">
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="{{ $selectedPasien ? route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) : '#' }}" id="topBtnAsuhan" class="bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#005a3c] transition-colors inline-flex items-center gap-2 shadow-sm {{ $selectedPasien ? '' : 'hidden' }}">
                 <span class="material-symbols-outlined text-base">clinical_notes</span>
                 <span>Asuhan Keperawatan Baru</span>
             </a>
-        @endif
+        </div>
     </div>
 
     <!-- Bento Grid Layout -->
@@ -159,7 +159,15 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 mt-auto">
+                    <button
+                        type="button"
+                        id="btnDownloadPdf"
+                        onclick="openModalCetakRM()"
+                        class="w-full bg-emerald-50 text-emerald-800 border border-emerald-300 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors flex justify-center items-center gap-2 shadow-sm text-center cursor-pointer {{ ($selectedPasien && $riwayatKunjungan->isNotEmpty()) ? '' : 'hidden' }}">
+                        <span class="material-symbols-outlined text-base text-emerald-700">picture_as_pdf</span>
+                        <span>Cetak Ringkasan Medis (PDF)</span>
+                    </button>
+
                     <a
                         id="btnActionAsuhan"
                         href="{{ $selectedPasien ? route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) : route('asuhan-keperawatan') }}"
@@ -175,8 +183,6 @@
                         <span>Daftar Seluruh Pasien</span>
                     </a>
                 </div>
-            </div>
-
             </div>
         </div>
 
@@ -240,7 +246,16 @@
                                                     <h4 class="text-sm sm:text-base font-bold text-on-surface">
                                                         Kunjungan Pemeriksaan
                                                     </h4>
-                                                    <span class="bg-[#E5F5F0] text-primary px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                                                    @if($loop->first)
+                                                        <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                                            Pemeriksaan Terkini
+                                                        </span>
+                                                    @else
+                                                        <span class="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                                                            Riwayat Sebelumnya
+                                                        </span>
+                                                    @endif
+                                                    <span class="bg-[#E5F5F0] text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                                                         Tersimpan
                                                     </span>
                                                 </div>
@@ -251,10 +266,16 @@
                                                 </p>
                                             </div>
 
-                                            <a href="{{ route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) }}" class="text-primary hover:underline text-xs font-bold inline-flex items-center gap-1">
-                                                <span class="material-symbols-outlined text-[15px]">edit_note</span>
-                                                Buka di Asuhan
-                                            </a>
+                                            <div class="flex items-center gap-2 shrink-0">
+                                                <a href="{{ route('rekam-medis.kunjungan.pdf', ['id_rekam_medis' => $rm->id_rekam_medis]) }}" target="_blank" class="text-white bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm" title="Cetak rangkuman rekam medis khusus pemeriksaan tanggal ini saja">
+                                                    <span class="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+                                                    <span>{{ \Carbon\Carbon::parse($rm->tgl_pemeriksaan)->isToday() ? 'Cetak Rangkuman Hari Ini' : 'Cetak Rangkuman Ini' }}</span>
+                                                </a>
+                                                <a href="{{ route('asuhan-keperawatan', ['pasien_id' => $selectedPasien->id_pasien]) }}" class="text-primary hover:underline text-xs font-bold inline-flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[15px]">edit_note</span>
+                                                    <span>Buka di Asuhan</span>
+                                                </a>
+                                            </div>
                                         </div>
 
                                         <!-- Keluhan & Tanda Vital Grid -->
@@ -457,9 +478,225 @@
 </div>
 
 {{-- ========================================================== --}}
+{{-- MODAL PILIHAN CETAK PDF REKAM MEDIS --}}
+{{-- ========================================================== --}}
+<div id="modalCetakRM" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Backdrop blur -->
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModalCetakRM()"></div>
+
+    <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-outline-variant">
+            
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-emerald-800 to-emerald-700 p-5 text-white">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-white backdrop-blur-sm">
+                            <span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white leading-snug">Cetak PDF Rekam Medis</h3>
+                            <p class="text-xs text-emerald-100 mt-0.5">
+                                Pasien: <strong id="modalPasienNama" class="text-white">{{ $selectedPasien ? $selectedPasien->nama_lengkap : '-' }}</strong> &bull; RM: <span id="modalPasienRM" class="font-mono font-semibold">{{ $selectedPasien ? $selectedPasien->no_rm : '-' }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeModalCetakRM()" class="text-white/80 hover:text-white rounded-lg p-1.5 hover:bg-white/10 transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-xl">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-5 sm:p-6 space-y-4">
+                <p class="text-xs text-on-surface-variant font-medium">
+                    Pilih format riwayat pemeriksaan yang ingin dicetak ke dalam format dokumen PDF:
+                </p>
+
+                <!-- Pilihan 1: Pemeriksaan Terkini / Hari Ini (Default & Recommended) -->
+                <label class="block border-2 border-primary bg-emerald-50/50 rounded-xl p-3.5 cursor-pointer hover:bg-emerald-50 transition-all option-card" id="card_opt_latest">
+                    <div class="flex items-start gap-3">
+                        <input type="radio" name="pilihan_cetak_rm" value="latest" id="radio_latest" checked class="mt-1 text-primary focus:ring-primary h-4 w-4" onchange="handleOptionChange()">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-sm font-bold text-on-surface">Pemeriksaan Hari Ini / Terkini</span>
+                                <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold">Rekomendasi</span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                                Hanya mencetak rangkuman pemeriksaan tanggal <strong id="modalLatestDate" class="text-on-surface">{{ $riwayatKunjungan->isNotEmpty() ? \Carbon\Carbon::parse($riwayatKunjungan->first()->tgl_pemeriksaan)->translatedFormat('d F Y') : '-' }}</strong> saja <em>tanpa mencetak riwayat hari sebelumnya</em>.
+                            </p>
+                        </div>
+                    </div>
+                </label>
+
+                <!-- Pilihan 2: Pilih Kunjungan Tertentu -->
+                <label class="block border border-outline-variant rounded-xl p-3.5 cursor-pointer hover:border-primary/60 transition-all option-card" id="card_opt_specific">
+                    <div class="flex items-start gap-3">
+                        <input type="radio" name="pilihan_cetak_rm" value="specific" id="radio_specific" class="mt-1 text-primary focus:ring-primary h-4 w-4" onchange="handleOptionChange()">
+                        <div class="flex-1">
+                            <span class="text-sm font-bold text-on-surface">Pilih Riwayat Pemeriksaan Tertentu</span>
+                            <p class="text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+                                Pilih salah satu dari riwayat kunjungan pemeriksaan pasien di hari sebelumnya.
+                            </p>
+                            
+                            <!-- Dropdown Tanggal Kunjungan -->
+                            <div class="mt-2.5">
+                                <select id="modalSelectKunjungan" class="w-full text-xs bg-white border border-outline-variant rounded-lg p-2 focus:ring-2 focus:ring-primary focus:outline-none" onfocus="document.getElementById('radio_specific').checked = true; handleOptionChange();">
+                                    @forelse($riwayatKunjungan as $rm)
+                                        <option value="{{ $rm->id_rekam_medis }}">
+                                            {{ \Carbon\Carbon::parse($rm->tgl_pemeriksaan)->translatedFormat('d M Y, H:i') }} WIB &bull; Keluhan: {{ Str::limit($rm->asuhanMedis ? $rm->asuhanMedis->keluhan_utama : '-', 35) }}
+                                        </option>
+                                    @empty
+                                        <option value="">Belum ada riwayat pemeriksaan</option>
+                                    @endforelse
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+
+                <!-- Pilihan 3: Semua Riwayat Pemeriksaan -->
+                <label class="block border border-outline-variant rounded-xl p-3.5 cursor-pointer hover:border-primary/60 transition-all option-card" id="card_opt_all">
+                    <div class="flex items-start gap-3">
+                        <input type="radio" name="pilihan_cetak_rm" value="all" id="radio_all" class="mt-1 text-primary focus:ring-primary h-4 w-4" onchange="handleOptionChange()">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-sm font-bold text-on-surface">Semua Riwayat Pemeriksaan (Lengkap)</span>
+                                <span class="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                    <span id="modalTotalKunjunganBadge">{{ $riwayatKunjungan->count() }}</span> Kunjungan
+                                </span>
+                            </div>
+                            <p class="text-xs text-on-surface-variant mt-1 leading-relaxed">
+                                Mencetak seluruh riwayat pemeriksaan rekam medis pasien dari awal terdaftar hingga kunjungan paling baru sekaligus.
+                            </p>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-surface-container-low px-5 py-4 border-t border-outline-variant flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-2">
+                <button type="button" onclick="closeModalCetakRM()" class="w-full sm:w-auto px-4 py-2 border border-outline-variant rounded-xl text-xs font-semibold text-on-surface hover:bg-white transition-colors cursor-pointer">
+                    Batal
+                </button>
+                <div class="w-full sm:w-auto flex items-center gap-2">
+                    <button type="button" onclick="prosesCetakPDF(true)" class="flex-1 sm:flex-initial px-3.5 py-2 border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer">
+                        <span class="material-symbols-outlined text-[15px]">download</span>
+                        <span>Unduh PDF</span>
+                    </button>
+                    <button type="button" onclick="prosesCetakPDF(false)" class="flex-1 sm:flex-initial px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer">
+                        <span class="material-symbols-outlined text-[15px]">print</span>
+                        <span>Buka / Cetak PDF</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{{-- ========================================================== --}}
 {{-- JAVASCRIPT FOR REAL-TIME PATIENT SWITCHING --}}
 {{-- ========================================================== --}}
 <script>
+let currentSelectedPasienId = {{ $selectedPasien ? $selectedPasien->id_pasien : 'null' }};
+let currentRiwayatList = @json($riwayatKunjungan->map(function($rm) {
+    return [
+        'id_rekam_medis' => $rm->id_rekam_medis,
+        'tgl_pemeriksaan' => \Carbon\Carbon::parse($rm->tgl_pemeriksaan)->translatedFormat('d F Y'),
+        'keluhan_utama' => $rm->asuhanMedis ? $rm->asuhanMedis->keluhan_utama : '-'
+    ];
+}));
+
+function openModalCetakRM() {
+    if (!currentSelectedPasienId) {
+        alert('Silakan pilih salah satu pasien terlebih dahulu.');
+        return;
+    }
+    const modal = document.getElementById('modalCetakRM');
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+}
+
+function closeModalCetakRM() {
+    const modal = document.getElementById('modalCetakRM');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+}
+
+function handleOptionChange() {
+    const selected = document.querySelector('input[name="pilihan_cetak_rm"]:checked')?.value;
+    
+    document.querySelectorAll('.option-card').forEach(card => {
+        card.classList.remove('border-2', 'border-primary', 'bg-emerald-50/50');
+        card.classList.add('border', 'border-outline-variant');
+    });
+    
+    if (selected === 'latest') {
+        const card = document.getElementById('card_opt_latest');
+        if (card) {
+            card.classList.add('border-2', 'border-primary', 'bg-emerald-50/50');
+            card.classList.remove('border-outline-variant');
+        }
+    } else if (selected === 'specific') {
+        const card = document.getElementById('card_opt_specific');
+        if (card) {
+            card.classList.add('border-2', 'border-primary', 'bg-emerald-50/50');
+            card.classList.remove('border-outline-variant');
+        }
+    } else if (selected === 'all') {
+        const card = document.getElementById('card_opt_all');
+        if (card) {
+            card.classList.add('border-2', 'border-primary', 'bg-emerald-50/50');
+            card.classList.remove('border-outline-variant');
+        }
+    }
+}
+
+function prosesCetakPDF(isDownload = false) {
+    if (!currentSelectedPasienId) {
+        alert('Silakan pilih pasien terlebih dahulu.');
+        return;
+    }
+
+    const pilihan = document.querySelector('input[name="pilihan_cetak_rm"]:checked')?.value || 'latest';
+    let url = '';
+
+    if (pilihan === 'latest') {
+        if (currentRiwayatList && currentRiwayatList.length > 0) {
+            url = "{{ url('/rekam-medis/kunjungan') }}/" + currentRiwayatList[0].id_rekam_medis + "/pdf";
+        } else {
+            url = "{{ url('/rekam-medis/pasien') }}/" + currentSelectedPasienId + "/pdf?mode=latest";
+        }
+    } else if (pilihan === 'specific') {
+        const select = document.getElementById('modalSelectKunjungan');
+        const rmId = select ? select.value : null;
+        if (!rmId) {
+            alert('Silakan pilih salah satu riwayat pemeriksaan dari dropdown.');
+            return;
+        }
+        url = "{{ url('/rekam-medis/kunjungan') }}/" + rmId + "/pdf";
+    } else if (pilihan === 'all') {
+        url = "{{ url('/rekam-medis/pasien') }}/" + currentSelectedPasienId + "/pdf?mode=all";
+    }
+
+    if (isDownload) {
+        url += (url.includes('?') ? '&' : '?') + 'download=1';
+    }
+
+    window.open(url, '_blank');
+    closeModalCetakRM();
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModalCetakRM();
+    }
+});
 function filterPasienRM(keyword) {
     const term = keyword.toLowerCase().trim();
     const cards = document.querySelectorAll('.pasien-rm-card');
@@ -545,12 +782,52 @@ function selectPasienRM(id) {
         }
         document.getElementById('headerPatientName').textContent = p.nama_lengkap;
 
-        // Update URLs
+        // Update URLs and current patient state
         const asuhanUrl = "{{ url('/asuhan-keperawatan') }}?pasien_id=" + p.id_pasien;
+        currentSelectedPasienId = p.id_pasien;
+        currentRiwayatList = riwayat;
+
         const topBtn = document.getElementById('topBtnAsuhan');
         const actionBtn = document.getElementById('btnActionAsuhan');
-        if (topBtn) topBtn.href = asuhanUrl;
+        if (topBtn) {
+            topBtn.href = asuhanUrl;
+            topBtn.classList.remove('hidden');
+        }
         if (actionBtn) actionBtn.href = asuhanUrl;
+
+        // Update modal data
+        const modalNama = document.getElementById('modalPasienNama');
+        if (modalNama) modalNama.textContent = p.nama_lengkap;
+        const modalRM = document.getElementById('modalPasienRM');
+        if (modalRM) modalRM.textContent = p.no_rm;
+        const modalDate = document.getElementById('modalLatestDate');
+        if (modalDate) modalDate.textContent = riwayat.length > 0 ? riwayat[0].tgl_pemeriksaan : '-';
+        const modalBadge = document.getElementById('modalTotalKunjunganBadge');
+        if (modalBadge) modalBadge.textContent = riwayat.length;
+
+        // Update select options in modal
+        const selectKunjungan = document.getElementById('modalSelectKunjungan');
+        if (selectKunjungan) {
+            selectKunjungan.innerHTML = '';
+            if (riwayat.length === 0) {
+                selectKunjungan.innerHTML = '<option value="">Belum ada riwayat pemeriksaan</option>';
+            } else {
+                riwayat.forEach((item, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id_rekam_medis;
+                    const keluhan = item.keluhan_utama ? item.keluhan_utama.substring(0, 35) : '-';
+                    opt.textContent = `${item.tgl_pemeriksaan} • Keluhan: ${keluhan}`;
+                    selectKunjungan.appendChild(opt);
+                });
+            }
+        }
+
+        const actionPdfBtn = document.getElementById('btnDownloadPdf');
+        if (riwayat.length > 0) {
+            if (actionPdfBtn) actionPdfBtn.classList.remove('hidden');
+        } else {
+            if (actionPdfBtn) actionPdfBtn.classList.add('hidden');
+        }
 
         // 2. Render Timeline Visits
         document.getElementById('visitCountBadge').textContent = `${riwayat.length} Kunjungan`;
@@ -584,7 +861,7 @@ function selectPasienRM(id) {
                 <div class="space-y-6" id="visitTimelineList">
         `;
 
-        riwayat.forEach(item => {
+        riwayat.forEach((item, idx) => {
             const planListHtml = (item.rencana_tindakan && item.rencana_tindakan.length > 0)
                 ? `<ul class="list-disc list-inside mt-0.5 space-y-0.5 text-on-surface">${item.rencana_tindakan.map(pl => `<li>${pl}</li>`).join('')}</ul>`
                 : `<p class="text-on-surface mt-0.5">Observasi dan tindakan keperawatan berkala.</p>`;
@@ -592,6 +869,12 @@ function selectPasienRM(id) {
             const allergyWarningHtml = (p.alergi && p.alergi !== 'Tidak Ada') 
                 ? `<div class="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs font-semibold text-red-700"><span class="material-symbols-outlined text-[16px]">warning</span> Peringatan Alergi: <span class="font-bold underline">${p.alergi}</span></div>` 
                 : '';
+
+            const badgeStatus = (idx === 0)
+                ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold">Pemeriksaan Terkini</span>`
+                : `<span class="bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full text-[10px] font-semibold">Riwayat Sebelumnya</span>`;
+
+            const btnText = (idx === 0) ? 'Cetak Rangkuman Hari Ini' : 'Cetak Rangkuman Ini';
 
             html += `
                 <div class="relative pl-10 sm:pl-12 group visit-entry">
@@ -610,7 +893,8 @@ function selectPasienRM(id) {
                                     <h4 class="text-sm sm:text-base font-bold text-on-surface">
                                         Kunjungan Pemeriksaan
                                     </h4>
-                                    <span class="bg-[#E5F5F0] text-primary px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                                    ${badgeStatus}
+                                    <span class="bg-[#E5F5F0] text-primary px-2.5 py-0.5 rounded-full text-[10px] font-bold">
                                         Tersimpan
                                     </span>
                                 </div>
@@ -620,10 +904,16 @@ function selectPasienRM(id) {
                                 </p>
                             </div>
 
-                            <a href="${asuhanUrl}" class="text-primary hover:underline text-xs font-bold inline-flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[15px]">edit_note</span>
-                                Buka di Asuhan
-                            </a>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a href="{{ url('/rekam-medis/kunjungan') }}/${item.id_rekam_medis}/pdf" target="_blank" class="text-white bg-emerald-700 hover:bg-emerald-800 px-3.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-sm" title="Cetak rangkuman rekam medis khusus pemeriksaan tanggal ini saja">
+                                    <span class="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+                                    <span>${btnText}</span>
+                                </a>
+                                <a href="${asuhanUrl}" class="text-primary hover:underline text-xs font-bold inline-flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[15px]">edit_note</span>
+                                    <span>Buka di Asuhan</span>
+                                </a>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
